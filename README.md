@@ -1,33 +1,4 @@
-![6bb2a486b967a89bf6727173296f2ce4_720](https://github.com/user-attachments/assets/c2a16144-58d8-4caf-a33c-19a427cb029b)
-
-# [鑫仔TG](https://t.me/xinzfun)  
-# [鑫仔博客](https://www.xinz.fun)
-# [咸鱼博客](http://blog.咸鱼.top)
-# 本库脚本一律不含非法行为 不涉及任何CK仓库  本仓库插件鑫仔和咸鱼大佬一起维护仅供娱乐使用 用户使用一切后果自负
-<h1 align="center">无界 | Bncr |作者: Xinz & 咸鱼
- QQ群:849427892
- </h1>
-<div align="center">
-  
- _
- </div
-    哪位大佬看完脚本觉得是盗用 联系我 我删库 谢谢
-## **无界机器人插件以及其他的一些自己写的或者从开源项目二改转载的脚本 也是自己的备份 请勿乱用谢谢 尽量做到开源 可以自己修改 尽量做到web配置； ** 
-  [鑫仔博客教程](https://www.xinz.fun/archives/1717170773466)
-  [鑫仔Github](https://github.com/seven-XINZ/bncr)
-  [ChatAI大聪明交流群](https://qm.qq.com/q/6BqfPZ7vXO)
-  [企鹅交流群](https://qm.qq.com/q/s8AdqbBMyW)
-  
-# 作者们的博客:[Xinz](https://www.xinz.fun) & [咸鱼](http://blog.咸鱼.top)
- # ChatGpt聊天URL
-   [大聪明gpt对接教程](https://www.master-jsx.top/docs/ChatNio/introduce)   
-   [大聪明各种模型中转站](https://chatai.master-jsx.top/)   
-   [TTS适配海豚Ai TTS-Online](https://www.ttson.cn/?source=6GunVW)   
-   [人机交互对话QChatGPT](https://qchatgpt.rockchin.top)
- 
-# *详情文档
-* [鑫仔Github](https://github.com/seven-XINZ/bncr)
-* [鑫仔博客教程](https://www.xinz.fun/archives/1717170773466)
+ # *详情文档
 * [官方Github](https://github.com/Anmours/Bncr) 
 * [官方TG频道](https://t.me/BncrJS)
 * [官方TG群组](https://t.me/BncrJSChat)
