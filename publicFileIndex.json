@@ -225,7 +225,7 @@
     "name": "USER_AGENTS",
     "author": "seven",
     "team": "jingshui",
-    "version": "v1.0.4",
+    "version": "1.0.4",
     "description": "🐒本仓库插件依赖此模块",
     "classification": [
       "功能插件"
