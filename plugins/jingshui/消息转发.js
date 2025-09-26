@@ -3,7 +3,7 @@
 * @team jingshui
 * @author seven（修改支持多平台多群+显示来源+时间换行）
 * @platform tgBot qq ssh HumanTG wxQianxun wxXyo wechaty
-* @version v3.2.2
+* @version v3.2.1
 * @name 消息转发
 * @rule [\s\S]+
 * @priority 100000
@@ -22,15 +22,15 @@ const jsonSchema = BncrCreateSchema.object({
       listen: BncrCreateSchema.array(
         BncrCreateSchema.object({
           from: BncrCreateSchema.string()
-            .setTitle('平台')
-            .setDescription('填写适配器，如 qq / tgBot / wechaty')
-            .setDefault(''),
+            。setTitle('平台')
+            。setDescription('填写适配器，如 qq / tgBot / wechaty')
+            。setDefault(''),
           type: BncrCreateSchema.string()
-            .setTitle('类型')
-            .setDescription('群或个人2选1')
-            .setEnum(["userId", "groupId"])
-            .setEnumNames(['个人', '群'])
-            .setDefault("groupId"),
+            。setTitle('类型')
+            。setDescription('群或个人2选1')
+            。setEnum(["userId", "groupId"])
+            。setEnumNames(['个人', '群'])
+            。setDefault("groupId"),
           id: BncrCreateSchema.array(
             BncrCreateSchema.string()
           ).setTitle('ID列表')
