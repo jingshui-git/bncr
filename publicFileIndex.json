@@ -176,7 +176,7 @@
     "id": "WqKaJKsunZOU1J3q1DGFigrkdA0=",
     "isChatPlugin": false
   },
-  "J+17f9sYzVwMnDK0Mjj39zIpAKI=": {
+  "DCUHzZuAIj+6wTXB3pkNhUx5ef0=": {
     "type": "github",
     "name": "ChatGPT",
     "author": "seven",
@@ -195,10 +195,10 @@
     "isService": false,
     "isAuthentication": false,
     "isEncPlugin": false,
-    "id": "J+17f9sYzVwMnDK0Mjj39zIpAKI=",
+    "id": "DCUHzZuAIj+6wTXB3pkNhUx5ef0=",
     "isChatPlugin": true
   },
-  "Vz+9Ew7UNoaiqCCbEh2PF2j7VJA=": {
+  "2TkCcTPPh2mbaLrrpWWXb8441s8=": {
     "type": "github",
     "name": "IKUN",
     "author": "seven",
@@ -217,32 +217,10 @@
     "isService": false,
     "isAuthentication": false,
     "isEncPlugin": false,
-    "id": "Vz+9Ew7UNoaiqCCbEh2PF2j7VJA=",
+    "id": "2TkCcTPPh2mbaLrrpWWXb8441s8=",
     "isChatPlugin": true
   },
-  "cUAH+l5tCi24vPAuJndteWullJY=": {
-    "type": "github",
-    "name": "cd",
-    "author": "咸鱼",
-    "team": "jingshui",
-    "version": "v1.0.0",
-    "description": "菜单功能",
-    "classification": [
-      "功能插件"
-    ],
-    "filename": "cd.js",
-    "fileDir": "/plugins/jingshui/cd.js",
-    "systemVersionRange": "",
-    "isCron": false,
-    "isAdapter": false,
-    "isMod": false,
-    "isService": false,
-    "isAuthentication": false,
-    "isEncPlugin": false,
-    "id": "cUAH+l5tCi24vPAuJndteWullJY=",
-    "isChatPlugin": true
-  },
-  "QlcN9vH0oBUdgkJvjZQEeXOICxQ=": {
+  "G0cM3UhkUDhp2CYpn+Ap3OwbzjM=": {
     "type": "github",
     "name": "USER_AGENTS",
     "author": "seven",
@@ -261,10 +239,10 @@
     "isService": false,
     "isAuthentication": false,
     "isEncPlugin": false,
-    "id": "QlcN9vH0oBUdgkJvjZQEeXOICxQ=",
+    "id": "G0cM3UhkUDhp2CYpn+Ap3OwbzjM=",
     "isChatPlugin": false
   },
-  "fqglT/LUjxe/ftVwql910keHGs4=": {
+  "i7nSPAeUX/WV18Ssd75ocA8GQ2A=": {
     "type": "github",
     "name": "ping",
     "author": "seven",
@@ -283,10 +261,10 @@
     "isService": false,
     "isAuthentication": false,
     "isEncPlugin": false,
-    "id": "fqglT/LUjxe/ftVwql910keHGs4=",
+    "id": "i7nSPAeUX/WV18Ssd75ocA8GQ2A=",
     "isChatPlugin": true
   },
-  "CnSNt7HhDyxvH10xE1PZGNfv1Jo=": {
+  "G8ckadoft8/atb/w5M/qxmUi8h4=": {
     "type": "github",
     "name": "二维码生成",
     "author": "seven",
@@ -305,10 +283,10 @@
     "isService": false,
     "isAuthentication": false,
     "isEncPlugin": false,
-    "id": "CnSNt7HhDyxvH10xE1PZGNfv1Jo=",
+    "id": "G8ckadoft8/atb/w5M/qxmUi8h4=",
     "isChatPlugin": true
   },
-  "DGUtbcT2hyCFeCzRK8Ro3xcNfps=": {
+  "KXAox+W03V4CKYhwKiEv515eTlk=": {
     "type": "github",
     "name": "命令大全",
     "author": "Doraemon",
@@ -327,10 +305,10 @@
     "isService": false,
     "isAuthentication": false,
     "isEncPlugin": false,
-    "id": "DGUtbcT2hyCFeCzRK8Ro3xcNfps=",
+    "id": "KXAox+W03V4CKYhwKiEv515eTlk=",
     "isChatPlugin": true
   },
-  "XYzGWiCTgCXS4mMV7/Xbq1wZwvM=": {
+  "vTDsUzm/85PVIhzCvmQeHdf6ct4=": {
     "type": "github",
     "name": "微信好友申请、拉群",
     "author": "薛定谔的大灰机",
@@ -349,32 +327,10 @@
     "isService": false,
     "isAuthentication": false,
     "isEncPlugin": false,
-    "id": "XYzGWiCTgCXS4mMV7/Xbq1wZwvM=",
+    "id": "vTDsUzm/85PVIhzCvmQeHdf6ct4=",
     "isChatPlugin": true
   },
-  "9rT6GpPCLzYeLk9a71i/XTUUMuI=": {
-    "type": "github",
-    "name": "摸鱼",
-    "author": "Dswang",
-    "team": "jingshui",
-    "version": "1.0.1",
-    "description": "摸鱼人日历，可以自定义接口 自用接口 https://api.vvhan.com/api/moyu",
-    "classification": [
-      "工具"
-    ],
-    "filename": "摸鱼.js",
-    "fileDir": "/plugins/jingshui/摸鱼.js",
-    "systemVersionRange": "",
-    "isCron": false,
-    "isAdapter": false,
-    "isMod": false,
-    "isService": false,
-    "isAuthentication": false,
-    "isEncPlugin": false,
-    "id": "9rT6GpPCLzYeLk9a71i/XTUUMuI=",
-    "isChatPlugin": true
-  },
-  "Amd5jY4yUSjYtta0SIZTW1/ky0k=": {
+  "GLMtmuDWmcsLWHrUDYy1LU9LZ28=": {
     "type": "github",
     "name": "星座运势",
     "author": "seven",
@@ -393,58 +349,14 @@
     "isService": false,
     "isAuthentication": false,
     "isEncPlugin": false,
-    "id": "Amd5jY4yUSjYtta0SIZTW1/ky0k=",
+    "id": "GLMtmuDWmcsLWHrUDYy1LU9LZ28=",
     "isChatPlugin": true
   },
-  "UosC73daLJcJvkCXq/D+1MCvl+w=": {
-    "type": "github",
-    "name": "每天60s",
-    "author": "seven",
-    "team": "jingshui",
-    "version": "1.0.0",
-    "description": "60秒读懂世界",
-    "classification": [
-      "功能插件"
-    ],
-    "filename": "每天60s.js",
-    "fileDir": "/plugins/jingshui/每天60s.js",
-    "systemVersionRange": "",
-    "isCron": false,
-    "isAdapter": false,
-    "isMod": false,
-    "isService": false,
-    "isAuthentication": false,
-    "isEncPlugin": false,
-    "id": "UosC73daLJcJvkCXq/D+1MCvl+w=",
-    "isChatPlugin": true
-  },
-  "uIMWFYu8xQk+7/v2U84rUE9evWU=": {
-    "type": "github",
-    "name": "消息转发",
-    "author": "seven",
-    "team": "jingshui",
-    "version": "v2.0.0",
-    "description": "监听某个人或群,当触发关键字,转发到指定目的地",
-    "classification": [
-      "功能插件"
-    ],
-    "filename": "消息转发.js",
-    "fileDir": "/plugins/jingshui/消息转发.js",
-    "systemVersionRange": "",
-    "isCron": false,
-    "isAdapter": false,
-    "isMod": false,
-    "isService": false,
-    "isAuthentication": false,
-    "isEncPlugin": false,
-    "id": "uIMWFYu8xQk+7/v2U84rUE9evWU=",
-    "isChatPlugin": true
-  },
-  "EEdkb1ElSNir3XDk+Xss4Vv7eGU=": {
+  "WDWf+EZYhodsQyEkP5sISTQvMEA=": {
     "type": "github",
     "name": "热点趋势",
     "author": "Dswang",
-    "team": "jingshui & SmartAI",
+    "team": "jingshui",
     "version": "1.0.1",
     "description": "获取网络热点",
     "classification": [
@@ -459,10 +371,10 @@
     "isService": false,
     "isAuthentication": false,
     "isEncPlugin": false,
-    "id": "EEdkb1ElSNir3XDk+Xss4Vv7eGU=",
+    "id": "WDWf+EZYhodsQyEkP5sISTQvMEA=",
     "isChatPlugin": true
   },
-  "HhXF/FXEqzOYxpPt9IAV9NRVWjc=": {
+  "ih+60fdomvT/AVSrG36DgBMRph0=": {
     "type": "github",
     "name": "爱快重拨",
     "author": "seven",
@@ -481,54 +393,10 @@
     "isService": false,
     "isAuthentication": false,
     "isEncPlugin": false,
-    "id": "HhXF/FXEqzOYxpPt9IAV9NRVWjc=",
+    "id": "ih+60fdomvT/AVSrG36DgBMRph0=",
     "isChatPlugin": true
   },
-  "sWb/rfa2xGDUiFD3+SXS+BiF8uk=": {
-    "type": "github",
-    "name": "联系管理员助手",
-    "author": "jingshui",
-    "team": "jingshui",
-    "version": "1.0.1 // Version bump for improved prompt",
-    "description": "允许用户向所有管理员发送消息。",
-    "classification": [
-      "工具"
-    ],
-    "filename": "联系管理员助手.js",
-    "fileDir": "/plugins/jingshui/联系管理员助手.js",
-    "systemVersionRange": "",
-    "isCron": false,
-    "isAdapter": false,
-    "isMod": false,
-    "isService": false,
-    "isAuthentication": false,
-    "isEncPlugin": true,
-    "id": "sWb/rfa2xGDUiFD3+SXS+BiF8uk=",
-    "isChatPlugin": true
-  },
-  "RTg9f8lCgGG/MIl7UsKL5c5Yw8Q=": {
-    "type": "github",
-    "name": "自定义通知人",
-    "author": "jingshui",
-    "team": "jingshui",
-    "version": "1.1.1 // Version bump for export fix",
-    "description": "允许用户通过命令向配置的指定用户发送消息。",
-    "classification": [
-      "工具"
-    ],
-    "filename": "自定义通知人.js",
-    "fileDir": "/plugins/jingshui/自定义通知人.js",
-    "systemVersionRange": "",
-    "isCron": false,
-    "isAdapter": false,
-    "isMod": false,
-    "isService": false,
-    "isAuthentication": false,
-    "isEncPlugin": true,
-    "id": "RTg9f8lCgGG/MIl7UsKL5c5Yw8Q=",
-    "isChatPlugin": true
-  },
-  "oqntx40MX++gA/ZFucquO6DKebU=": {
+  "LQO2ljqsrdj+H8N6/jrKJX7XkAc=": {
     "type": "github",
     "name": "舔狗日记",
     "author": "seven",
@@ -547,29 +415,7 @@
     "isService": false,
     "isAuthentication": false,
     "isEncPlugin": false,
-    "id": "oqntx40MX++gA/ZFucquO6DKebU=",
-    "isChatPlugin": true
-  },
-  "igoPTLlTJSwn8BHC8emGklKO0yM=": {
-    "type": "github",
-    "name": "菜单",
-    "author": "seven",
-    "team": "jingshui",
-    "version": "1.0.4",
-    "description": "可自定义菜单内容和底部显示的菜单插件",
-    "classification": [
-      "工具"
-    ],
-    "filename": "菜单.js",
-    "fileDir": "/plugins/jingshui/菜单.js",
-    "systemVersionRange": "",
-    "isCron": false,
-    "isAdapter": false,
-    "isMod": false,
-    "isService": false,
-    "isAuthentication": false,
-    "isEncPlugin": false,
-    "id": "igoPTLlTJSwn8BHC8emGklKO0yM=",
+    "id": "LQO2ljqsrdj+H8N6/jrKJX7XkAc=",
     "isChatPlugin": true
   }
 }

@@ -22,15 +22,15 @@ const jsonSchema = BncrCreateSchema.object({
       listen: BncrCreateSchema.array(
         BncrCreateSchema.object({
           from: BncrCreateSchema.string()
-            .setTitle('平台')
-            .setDescription('填写适配器，如 qq / tgBot / wechaty')
-            .setDefault(''),
+            。setTitle('平台')
+            。setDescription('填写适配器，如 qq / tgBot / wechaty')
+            。setDefault(''),
           type: BncrCreateSchema.string()
-            .setTitle('类型')
-            .setDescription('群或个人2选1')
-            .setEnum(["userId", "groupId"])
-            .setEnumNames(['个人', '群'])
-            .setDefault("groupId"),
+            。setTitle('类型')
+            。setDescription('群或个人2选1')
+            。setEnum(["userId", "groupId"])
+            。setEnumNames(['个人', '群'])
+            。setDefault("groupId"),
           id: BncrCreateSchema.array(
             BncrCreateSchema.string()
           ).setTitle('ID列表')
