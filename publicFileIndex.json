@@ -131,7 +131,7 @@
     "isEncPlugin": false,
     "id": "/dYGSmV9Q9z/dctWzOcKXrN9Q04=",
     "isChatPlugin": false
-  },
+  }，
   "wAOS0D6TIOBHib03r3xqCxDF5Ac=": {
     "type": "github",
     "name": "wxQianxun",
@@ -141,7 +141,7 @@
     "description": "wxQianxun适配器",
     "classification": [
       "官方适配器"
-    ],
+    ]，
     "filename": "wxQianxun.js",
     "fileDir": "/Adapter/wxQianxun.js",
     "systemVersionRange": "",
@@ -153,7 +153,7 @@
     "isEncPlugin": false,
     "id": "wAOS0D6TIOBHib03r3xqCxDF5Ac=",
     "isChatPlugin": false
-  },
+  }，
   "WqKaJKsunZOU1J3q1DGFigrkdA0=": {
     "type": "github",
     "name": "wxXyo",
@@ -163,7 +163,7 @@
     "description": "wxXyo适配器",
     "classification": [
       "官方适配器"
-    ],
+    ]，
     "filename": "wxXyo.js",
     "fileDir": "/Adapter/wxXyo.js",
     "systemVersionRange": "",
@@ -175,7 +175,7 @@
     "isEncPlugin": false,
     "id": "WqKaJKsunZOU1J3q1DGFigrkdA0=",
     "isChatPlugin": false
-  },
+  }，
   "DCUHzZuAIj+6wTXB3pkNhUx5ef0=": {
     "type": "github",
     "name": "ChatGPT",
@@ -185,7 +185,7 @@
     "description": "ChatGpt聊天，适配无界3.0，删除了tts避免部分不支持tts 修复对话只能独立对话 ",
     "classification": [
       "插件"
-    ],
+    ]，
     "filename": "ChatGPT.js",
     "fileDir": "/plugins/jingshui/ChatGPT.js",
     "systemVersionRange": "",
@@ -197,7 +197,7 @@
     "isEncPlugin": false,
     "id": "DCUHzZuAIj+6wTXB3pkNhUx5ef0=",
     "isChatPlugin": true
-  },
+  }，
   "2TkCcTPPh2mbaLrrpWWXb8441s8=": {
     "type": "github",
     "name": "IKUN",
@@ -207,7 +207,7 @@
     "description": "发送IKUN语录和表情包支持所有平台",
     "classification": [
       "功能插件"
-    ],
+    ]，
     "filename": "IKUN.js",
     "fileDir": "/plugins/jingshui/IKUN.js",
     "systemVersionRange": "",
@@ -219,13 +219,13 @@
     "isEncPlugin": false,
     "id": "2TkCcTPPh2mbaLrrpWWXb8441s8=",
     "isChatPlugin": true
-  },
+  }，
   "G0cM3UhkUDhp2CYpn+Ap3OwbzjM=": {
     "type": "github",
     "name": "USER_AGENTS",
     "author": "seven",
     "team": "jingshui",
-    "version": "v1.0.4",
+    "version": "1.0.4",
     "description": "🐒本仓库插件依赖此模块",
     "classification": [
       "功能插件"
