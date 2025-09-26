@@ -1,47 +1,36 @@
-name: Update JSON Index
+name: 生成 插件市场所需 索引
 
-# 赋予 Actions 写权限
-permissions:
-  contents: write
-
-# 触发条件：手动、main分支推送、定时
 on:
-  workflow_dispatch:       # 手动运行
   push:
-    branches:
-      - main               # main 分支更新时运行
-  schedule:
-    - cron: '0 0 * * *'    # 每天零点自动运行（可选）
+    paths:
+      - 'Adapter/**'
+      - 'plugins/**'
 
 jobs:
-  update-index:
+  build:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. 检出代码
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - name: 检出代码
+        uses: actions/checkout@v2
 
-      # 2. 配置 git 用户信息
-      - name: Configure git identity
+      - name: 设置 Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+
+      - name: 安装依赖
+        run: npm install
+
+      - name: 由Actions自动生成插件市场所需JSON索引
+        run: node .github/workflows/generate_index.js
+
+      - name: 提交并推送更改
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email '41898282+github-actions[bot]@users.noreply.github.com'
-
-      # 3. 生成 publicFileIndex.json（替换成你的生成脚本）
-      - name: Generate publicFileIndex.json
-        run: |
-          echo "这里运行你生成 JSON 的脚本"
-          # 例如：node scripts/genIndex.js
-
-      # 4. 有修改才提交并推送
-      - name: Commit & Push if changed
-        run: |
           git add publicFileIndex.json
-          if ! git diff --cached --quiet; then
-            git commit -m '由Actions自动生成插件市场所需JSON索引'
-            git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/jingshui-git/bncr.git
-            git push
-          else
-            echo "publicFileIndex.json 没有变化，跳过提交"
-          fi
+          git commit -m '由Actions自动生成插件市场所需JSON索引'
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
