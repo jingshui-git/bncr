@@ -3,7 +3,7 @@
 * @team jingshui
 * @author seven（修改支持多平台多群+显示来源+时间换行）
 * @platform tgBot qq ssh HumanTG wxQianxun wxXyo wechaty
-* @version v3.2.1
+* @version v3.2.2
 * @name 消息转发
 * @rule [\s\S]+
 * @priority 100000
