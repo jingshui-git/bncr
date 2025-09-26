@@ -3,7 +3,7 @@
  * 插件名
  * @name 舔狗日记
  * 组织名  预留字段，未来发布插件会用到
- * @team xinz
+ * @team jingshui
  * 版本号
  * @version 1.0.5
  * 说明

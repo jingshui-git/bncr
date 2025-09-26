@@ -1,7 +1,7 @@
 /**作者
  * @author seven
  * @name IKUN
- * @team xinz
+ * @team jingshui
  * @version 1.0.2
  * @description 发送IKUN语录和表情包支持所有平台
  * @platform tgBot qq ssh HumanTG wxQianxun wxXyo wechaty

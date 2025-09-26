@@ -1,7 +1,7 @@
 /**
  * @author seven
  * @name ping
- * @team xinz
+ * @team jingshui
  * @version 1.17.0
  * @description ping/web测速插件
  * @rule ^ping (.+)$

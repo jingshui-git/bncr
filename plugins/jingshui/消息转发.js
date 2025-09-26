@@ -1,6 +1,6 @@
 /**
 * @description 同时监听多个平台(如QQ/TG)的多个群或用户，触发关键字后转发到指定目的地，并在消息中标明来源和时间(时间换行)
-* @team xinz
+* @team jingshui
 * @author seven（修改支持多平台多群+显示来源+时间换行）
 * @platform tgBot qq ssh HumanTG wxQianxun wxXyo wechaty
 * @version v3.2.1

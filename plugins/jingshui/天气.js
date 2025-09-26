@@ -1,7 +1,7 @@
 /** 
  * @author seven
  * @name 天气
- * @team xinz
+ * @team jingshui
  * @version 1.0.22
  * @description 中文城市自动转英文查询天气
  * @rule ^天气([\s\S]+)$

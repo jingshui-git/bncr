@@ -1,7 +1,7 @@
 /**
  * @author seven
  * @name 状态查询
- * @team xinz
+ * @team jingshui
  * @version 1.0.0
  * @description 本机资源查询
  * @rule ^(运行状态)$

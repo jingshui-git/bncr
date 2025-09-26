@@ -2,7 +2,7 @@
 /**
  * @author seven
  * @name ChatGPT
- * @team xinz
+ * @team jingshui
  * @version 1.0.5
  * @description ChatGpt聊天，适配无界3.0，删除了tts避免部分不支持tts 修复对话只能独立对话 
  * @rule ^(ai|画图) ([\s\S]+)$

@@ -1,7 +1,7 @@
 /**作者
  * @author 薛定谔的大灰机
  * @name 微信好友申请、拉群
- * @team xinz
+ * @team jingshui
  * @version 2.0.1
  * @rule 收到好友添加请求
  * @description 下方加群关键词可自定义

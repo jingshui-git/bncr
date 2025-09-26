@@ -1,7 +1,7 @@
 /**
  * @author Doraemon
  * @name 命令大全
- * @team xinz
+ * @team jingshui
  * @version 1.0.0
  * @description 无界命令大全
  * @rule ^(命令)$

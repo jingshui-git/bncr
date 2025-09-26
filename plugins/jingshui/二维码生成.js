@@ -1,7 +1,7 @@
 /**
  * @author seven
  * @name 二维码生成
- * @team xinz
+ * @team jingshui
  * @version 1.0.1
  * @description 二维码生成插件，通过自定义的API接口生成二维码
  * @rule ^(二维码生成) (.+)$

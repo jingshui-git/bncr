@@ -1,7 +1,7 @@
 /**
  * @author seven
  * @description 自动回复
- * @team xinz
+ * @team jingshui
  * @version v1.0.0
  * @name 自动回复 修改为菜单项的变更版本  可发送菜单指令 获取用户设置的关键词列表 仅管理员添加或删除关键词  
  关键词添加识别错误请到mod目录查看关键词信息自己更改

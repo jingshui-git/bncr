@@ -1,7 +1,7 @@
 /**作者
  * @author seven
  * @name 爱快重拨
- * @team xinz
+ * @team jingshui
  * @version 1.1.7
  * @description 控制iKuai重新拨号
  * @rule ^(爱快|ikuai|iKuai)(重拨|重播)([0-9]+)$

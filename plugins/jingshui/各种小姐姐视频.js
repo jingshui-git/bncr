@@ -4,7 +4,7 @@
  * @admin false
  * @public true
  * @author zhu
- * @team xinz
+ * @team jingshui
  * @Github https://github.com/Mrzqd
  * @version 1.0.0
  * @disable false

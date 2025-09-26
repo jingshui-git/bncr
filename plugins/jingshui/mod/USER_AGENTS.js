@@ -2,7 +2,7 @@
  * @name USER_AGENTS
  * @version v1.0.4
  * @author seven
- * @team xinz
+ * @team jingshui
  * @description 🐒本仓库插件依赖此模块
  * @module true
  * @public true

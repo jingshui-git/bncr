@@ -3,7 +3,7 @@
  * @name Gemini
  * @version 1.0.3
  * @description gemini聊天, 支持自定义模型
- * @team xinz
+ * @team jingshui
  * @rule ^(gems|gemc|gemp)([\s\S]+)$
  * @admin true
  * @public false
