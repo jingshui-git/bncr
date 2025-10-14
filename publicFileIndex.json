@@ -225,7 +225,7 @@
     "name": "USER_AGENTS",
     "author": "seven",
     "team": "jingshui",
-    "version": "1.0.4",
+    "version": "v1.0.4",
     "description": "🐒本仓库插件依赖此模块",
     "classification": [
       "功能插件"
@@ -372,28 +372,6 @@
     "isAuthentication": false,
     "isEncPlugin": false,
     "id": "WDWf+EZYhodsQyEkP5sISTQvMEA=",
-    "isChatPlugin": true
-  },
-    "uIMWFYu8xQk+7/v2U84rUE9evWU=": {
-    "type": "github",
-    "name": "消息转发",
-    "author": "seven",
-    "team": "jingshui",
-    "version": "3.2.2",
-    "description": "监听某个人或群,当触发关键字,转发到指定目的地",
-    "classification": [
-      "功能插件"
-    ],
-    "filename": "消息转发.js",
-    "fileDir": "/plugins/jingshui/消息转发.js",
-    "systemVersionRange": "",
-    "isCron": false,
-    "isAdapter": false,
-    "isMod": false,
-    "isService": false,
-    "isAuthentication": false,
-    "isEncPlugin": false,
-    "id": "uIMWFYu8xQk+7/v2U84rUE9evWU=",
     "isChatPlugin": true
   },
   "ih+60fdomvT/AVSrG36DgBMRph0=": {
