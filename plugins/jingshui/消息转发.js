@@ -1,6 +1,7 @@
 /**
 * @description 多规则独立配置的多平台消息转发：支持监听指定群或用户，命中关键词后转发到指定群或用户(附来源与时间)
 * @team jingshui
+* @author seven（修改支持多规则、来源与时间显示）
 * @platform tgBot qq ssh HumanTG wxQianxun wxXyo wechaty
 * @version v3.2.2
 * @name 消息转发
@@ -20,6 +21,7 @@ const jsonSchema = BncrCreateSchema.object({
         .setDescription("是否启用该规则")
         .setDefault(true),
 
+      // 监听来源配置：支持多个平台、群或用户
       listen: BncrCreateSchema.array(
         BncrCreateSchema.object({
           from: BncrCreateSchema.string()
@@ -32,23 +34,23 @@ const jsonSchema = BncrCreateSchema.object({
             .setEnum(["userId", "groupId"])
             .setEnumNames(["个人", "群"])
             .setDefault("groupId"),
-          id: BncrCreateSchema.array(
-            BncrCreateSchema.string()
-          )
+          id: BncrCreateSchema.array(BncrCreateSchema.string())
             .setTitle("监听ID列表")
             .setDescription("群号或个人ID，可填写多个")
             .setDefault([])
         })
       )
         .setTitle("监听来源")
-        .setDescription("配置多个来源，包含群和用户")
+        .setDescription("配置多个来源（群或用户）")
         .setDefault([]),
 
+      // 触发关键词
       rule: BncrCreateSchema.array(BncrCreateSchema.string())
         .setTitle("关键词")
         .setDescription('触发关键词，填写“任意”则不限制')
         .setDefault(["任意"]),
 
+      // 转发目标
       toSender: BncrCreateSchema.array(
         BncrCreateSchema.object({
           id: BncrCreateSchema.string()
@@ -71,6 +73,7 @@ const jsonSchema = BncrCreateSchema.object({
         .setDescription("命中规则后转发到的群/用户，可多个")
         .setDefault([]),
 
+      // 替换内容
       replace: BncrCreateSchema.array(
         BncrCreateSchema.object({
           old: BncrCreateSchema.string()
@@ -87,9 +90,10 @@ const jsonSchema = BncrCreateSchema.object({
         .setDescription("支持多个替换规则")
         .setDefault([]),
 
+      // 尾部追加文字
       addText: BncrCreateSchema.string()
         .setTitle("尾部追加内容")
-        .setDescription("添加在消息末尾，“\\n” 换行")
+        .setDescription("添加在消息末尾，“\\n”换行")
         .setDefault("")
     })
   )
@@ -105,27 +109,28 @@ module.exports = async s => {
     // 读取配置
     await ConfigDB.get();
     if (!Object.keys(ConfigDB.userConfig).length) {
-      console.log('请先配置插件：输入"修改无界配置"或在前端web配置');
+      console.log('请先配置插件：发送"修改无界配置"或在前端web配置');
       return 'next';
     }
 
     const configs = (ConfigDB.userConfig.configs || []).filter(o => o.enable);
     const msgInfo = s.msgInfo;
 
+    // 打印消息来源（调试）
     console.log(`[消息] 平台:${msgInfo.from}, 群:${msgInfo.groupId}, 用户:${msgInfo.userId}, 内容:${msgInfo.msg}`);
 
     for (const config of configs) {
       let msgStr = msgInfo.msg;
       let triggered = false;
 
-      // 检查来源是否匹配
+      // 检查来源匹配
       const hitSource = config.listen.some(src =>
         msgInfo.from === src.from &&
         src.id.includes(String(msgInfo[src.type]))
       );
       if (!hitSource) continue;
 
-      // 检查关键词
+      // 检查关键词匹配
       const hitKeyword = config.rule.some(k =>
         k === "任意" || (k && msgInfo.msg.includes(k))
       );
@@ -137,22 +142,22 @@ module.exports = async s => {
         if (r.old) msgStr = msgStr.replace(new RegExp(r.old, "g"), r.new);
       });
 
-      // 格式化时间
+      // 格式化当前时间
       const now = new Date();
       const pad = n => n.toString().padStart(2, "0");
       const timeStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
 
-      // 来源与时间信息换行显示
+      // 来源与时间信息（时间换行）
       const fromType = msgInfo.groupId ? "群" : "用户";
       const fromId = msgInfo.groupId || msgInfo.userId;
       const sourceInfo = `[来源 ${msgInfo.from} ${fromType}:${fromId}]\n[时间 ${timeStr}]`;
 
       if (!triggered) continue;
 
-      // 最终消息
+      // 最终拼接消息
       const msgToSend = `${msgStr}${config.addText.replaceAll("\\n", "\n")}\n${sourceInfo}`;
 
-      // 转发到目标
+      // 执行转发
       config.toSender.forEach(dst => {
         const obj = { platform: dst.from, msg: msgToSend };
         obj[dst.type] = dst.id;
