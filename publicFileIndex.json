@@ -379,7 +379,7 @@
     "name": "消息转发",
     "author": "seven",
     "team": "jingshui",
-    "version": "3.2.2",
+    "version": "3.2.3",
     "description": "监听某个人或群,当触发关键字,转发到指定目的地",
     "classification": [
       "功能插件"
