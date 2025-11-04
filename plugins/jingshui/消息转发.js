@@ -1,9 +1,9 @@
 /**
 * @description 多规则独立配置的多平台消息转发：自动识别并转发图片、视频、语音、文件消息
 * @team jingshui
-* @author seven（增强版：支持QQ CQ 码解析）
+* @author seven
 * @platform tgBot qq ssh HumanTG wxQianxun wxXyo wechaty
-* @version v3.3.1
+* @version v3.3.2
 * @name 消息转发
 * @rule [\s\S]+
 * @priority 100000
@@ -65,7 +65,7 @@ const jsonSchema = BncrCreateSchema.object({
 
 const ConfigDB = new BncrPluginConfig(jsonSchema);
 
-// 解析 QQ CQ码
+// 解析 QQ CQ 码
 function parseCQ(msg) {
   const res = { type: 'text', path: '', text: msg };
   if (!msg) return res;
@@ -110,7 +110,7 @@ module.exports = async s => {
       let mediaType = 'text';
       let mediaPath = '';
 
-      // QQ 图片/视频识别
+      // QQ 图片/视频识别
       if (msgInfo.from === 'qq' && msgInfo.msg.includes('[CQ:')) {
         const parsed = parseCQ(msgInfo.msg);
         mediaType = parsed.type;
