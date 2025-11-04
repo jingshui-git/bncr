@@ -3,13 +3,13 @@
 * @team jingshui
 * @author seven
 * @platform tgBot qq ssh HumanTG wxQianxun wxXyo wechaty
-* @version 3.3.5
+* @version 3.3.6
 * @name 消息转发
 * @rule [\s\S]+
 * @priority 100000
 * @admin false
 * @disable false
-* @public true
+* @public false
 * @classification ["功能插件"]
 */
 
@@ -65,7 +65,7 @@ const jsonSchema = BncrCreateSchema.object({
 
 const ConfigDB = new BncrPluginConfig(jsonSchema);
 
-// 解析QQ CQ 码
+// 解析 QQ CQ 码
 function parseCQ(msg) {
   const res = { type: 'text', path: '', text: msg };
   if (!msg) return res;
@@ -80,6 +80,19 @@ function parseCQ(msg) {
     res.text = `[${tag}]`;
   }
   return res;
+}
+
+// 封装HumanTG发送消息，自动处理editMessage错误
+async function safeSendHumanTG(client, sendID, msg, toMsgId, options = {}) {
+  try {
+    return await client.editMessage(sendID, { message: +toMsgId, text: msg });
+  } catch (e) {
+    if (e.errorMessage && e.errorMessage.includes('MESSAGE_ID_INVALID')) {
+      return await client.sendMessage(sendID, { message: msg, ...options });
+    } else {
+      throw e;
+    }
+  }
 }
 
 module.exports = async s => {
@@ -106,24 +119,23 @@ module.exports = async s => {
       );
       if (!hitKeyword) continue;
 
+      // 消息处理
       let msgStr = msgInfo.msg;
       let mediaType = 'text';
       let mediaPath = '';
 
-      // QQ 图片/视频识别
       if (msgInfo.from === 'qq' && msgInfo.msg.includes('[CQ:')) {
         const parsed = parseCQ(msgInfo.msg);
         mediaType = parsed.type;
-        mediaPath = parsed.path; // URL地址或本地路径
+        mediaPath = parsed.path;
         msgStr = parsed.text;
       }
 
-      // 文本替换
       conf.replace.forEach(r => {
         if (r.old) msgStr = msgStr.replace(new RegExp(r.old, 'g'), r.new);
       });
 
-      // 来源&时间信息
+      // 附加来源与时间
       let extra = '';
       if (conf.showSource) {
         const srcType = msgInfo.groupId ? '群' : '用户';
@@ -136,24 +148,19 @@ module.exports = async s => {
         const timeStr = `${t.getFullYear()}-${pad(t.getMonth() + 1)}-${pad(t.getDate())} ${pad(t.getHours())}:${pad(t.getMinutes())}:${pad(t.getSeconds())}`;
         extra += `${extra ? '\n' : ''}[时间 ${timeStr}]`;
       }
-
-      // 拼接文本内容
       const fullMsg = `${msgStr}${conf.addText.replaceAll('\\n', '\n')}${extra ? '\n' + extra : ''}`;
 
-      // 转发逻辑
+      // 转发
       for (const dst of conf.toSender) {
         const obj = { platform: dst.from };
         obj[dst.type] = dst.id;
-
-        // 发送多媒体或文本
         if (mediaType !== 'text' && mediaPath) {
           obj.type = mediaType;
-          obj.path = mediaPath; // 使用URL避免HumanTG报ENOENT
+          obj.path = mediaPath; // 使用URL或本地文件路径
         } else {
           obj.type = 'text';
           obj.msg = fullMsg;
         }
-
         sysMethod.push(obj);
       }
     }
