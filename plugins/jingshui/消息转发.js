@@ -1,9 +1,9 @@
 /**
-* @description 多规则独立配置的多平台消息转发：自动识别并转发图片、视频、语音、文件消息
+* @description 多规则独立配置的多平台消息转发：自动识别并下载QQ图片、视频，保证跨平台正确发送
 * @team jingshui
-* @author seven
+* @author seven（增强：支持QQ CQ码图片下载）
 * @platform tgBot qq ssh HumanTG wxQianxun wxXyo wechaty
-* @version 3.3.5
+* @version 3.3.6
 * @name 消息转发
 * @rule [\s\S]+
 * @priority 100000
@@ -12,6 +12,10 @@
 * @public true
 * @classification ["功能插件"]
 */
+
+const fs = require('fs');
+const path = require('path');
+const fetch = require('node-fetch');
 
 const jsonSchema = BncrCreateSchema.object({
   configs: BncrCreateSchema.array(
@@ -24,12 +28,12 @@ const jsonSchema = BncrCreateSchema.object({
         BncrCreateSchema.object({
           from: BncrCreateSchema.string().setTitle('监听平台').setDefault(''),
           type: BncrCreateSchema.string()
-            。setTitle('监听类型')
-            。setEnum(["userId","groupId"])
-            。setEnumNames(["个人","群"])
-            。setDefault("groupId"),
+            .setTitle('监听类型')
+            .setEnum(["userId","groupId"])
+            .setEnumNames(["个人","群"])
+            .setDefault("groupId"),
           id: BncrCreateSchema.array(BncrCreateSchema.string())
-            。setTitle('监听ID列表').setDefault([])
+            .setTitle('监听ID列表').setDefault([])
         })
       ).setTitle('监听来源').setDefault([]),
 
@@ -65,19 +69,27 @@ const jsonSchema = BncrCreateSchema.object({
 
 const ConfigDB = new BncrPluginConfig(jsonSchema);
 
-// 解析QQ CQ 码
-function parseCQ(msg) {
+/** 解析QQ CQ 码并下载图片返回本地路径 **/
+async function parseAndDownload(msg) {
   const res = { type: 'text', path: '', text: msg };
   if (!msg) return res;
-  const reg = /\[CQ:(image|video|record|file).*?(?:url=|file=)([^,\]]+)/i;
-  const match = msg.match(reg);
+  const match = msg.match(/\[CQ:(image|video|record|file).*?(?:url=|file=)([^,\]]+)/i);
   if (match && match[1] && match[2]) {
     res.type = match[1] === 'record' ? 'audio' : match[1];
-    res.path = decodeURIComponent(match[2]);
-    const tag = res.type === 'image' ? '图片'
-      : res.type === 'video' ? '视频'
-      : res.type === 'audio' ? '语音' : '文件';
-    res.text = `[${tag}]`;
+    const url = decodeURIComponent(match[2]);
+    res.text = `[${res.type === 'image' ? '图片' : res.type === 'video' ? '视频' : res.type === 'audio' ? '语音' : '文件'}]`;
+    const tmpDir = '/bncr/BncrData/tmp';
+    if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir, { recursive: true });
+    const filePath = path.join(tmpDir, `${Date.now()}.${res.type === 'video' ? 'mp4' : res.type === 'audio' ? 'mp3' : 'png'}`);
+    try {
+      const response = await fetch(url);
+      const buffer = await response.buffer();
+      fs.writeFileSync(filePath, buffer);
+      res.path = filePath;
+    } catch (e) {
+      console.error('下载文件失败:', e.message);
+      res.path = url; // 回退使用URL发送
+    }
   }
   return res;
 }
@@ -110,11 +122,11 @@ module.exports = async s => {
       let mediaType = 'text';
       let mediaPath = '';
 
-      // QQ 图片/视频识别
+      // QQ消息解析并下载
       if (msgInfo.from === 'qq' && msgInfo.msg.includes('[CQ:')) {
-        const parsed = parseCQ(msgInfo.msg);
+        const parsed = await parseAndDownload(msgInfo.msg);
         mediaType = parsed.type;
-        mediaPath = parsed.path; // URL地址或本地路径
+        mediaPath = parsed.path;
         msgStr = parsed.text;
       }
 
@@ -123,7 +135,7 @@ module.exports = async s => {
         if (r.old) msgStr = msgStr.replace(new RegExp(r.old, 'g'), r.new);
       });
 
-      // 来源&时间信息
+      // 来源、时间拼接
       let extra = '';
       if (conf.showSource) {
         const srcType = msgInfo.groupId ? '群' : '用户';
@@ -136,24 +148,19 @@ module.exports = async s => {
         const timeStr = `${t.getFullYear()}-${pad(t.getMonth() + 1)}-${pad(t.getDate())} ${pad(t.getHours())}:${pad(t.getMinutes())}:${pad(t.getSeconds())}`;
         extra += `${extra ? '\n' : ''}[时间 ${timeStr}]`;
       }
-
-      // 拼接文本内容
       const fullMsg = `${msgStr}${conf.addText.replaceAll('\\n', '\n')}${extra ? '\n' + extra : ''}`;
 
-      // 转发逻辑
+      // 转发
       for (const dst of conf.toSender) {
         const obj = { platform: dst.from };
         obj[dst.type] = dst.id;
-
-        // 发送多媒体或文本
         if (mediaType !== 'text' && mediaPath) {
           obj.type = mediaType;
-          obj.path = mediaPath; // 使用URL避免HumanTG报ENOENT
+          obj.path = mediaPath;
         } else {
           obj.type = 'text';
           obj.msg = fullMsg;
         }
-
         sysMethod.push(obj);
       }
     }
