@@ -154,28 +154,6 @@
     "id": "wAOS0D6TIOBHib03r3xqCxDF5Ac=",
     "isChatPlugin": false
   },
-  "WqKaJKsunZOU1J3q1DGFigrkdA0=": {
-    "type": "github",
-    "name": "wxXyo",
-    "author": "Anmour",
-    "team": "Bncr团队",
-    "version": "1.0.2",
-    "description": "wxXyo适配器",
-    "classification": [
-      "官方适配器"
-    ],
-    "filename": "wxXyo.js",
-    "fileDir": "/Adapter/wxXyo.js",
-    "systemVersionRange": "",
-    "isCron": false,
-    "isAdapter": true,
-    "isMod": false,
-    "isService": false,
-    "isAuthentication": false,
-    "isEncPlugin": false,
-    "id": "WqKaJKsunZOU1J3q1DGFigrkdA0=",
-    "isChatPlugin": false
-  },
   "DCUHzZuAIj+6wTXB3pkNhUx5ef0=": {
     "type": "github",
     "name": "ChatGPT",
@@ -372,28 +350,6 @@
     "isAuthentication": false,
     "isEncPlugin": false,
     "id": "WDWf+EZYhodsQyEkP5sISTQvMEA=",
-    "isChatPlugin": true
-  },
-    "uIMWFYu8xQk+7/v2U84rUE9evWU=": {
-    "type": "github",
-    "name": "消息转发",
-    "author": "seven",
-    "team": "jingshui",
-    "version": "3.2.3",
-    "description": "监听某个人或群,当触发关键字,转发到指定目的地",
-    "classification": [
-      "功能插件"
-    ],
-    "filename": "消息转发.js",
-    "fileDir": "/plugins/jingshui/消息转发.js",
-    "systemVersionRange": "",
-    "isCron": false,
-    "isAdapter": false,
-    "isMod": false,
-    "isService": false,
-    "isAuthentication": false,
-    "isEncPlugin": false,
-    "id": "uIMWFYu8xQk+7/v2U84rUE9evWU=",
     "isChatPlugin": true
   },
   "ih+60fdomvT/AVSrG36DgBMRph0=": {
