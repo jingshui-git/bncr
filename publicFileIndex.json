@@ -154,6 +154,28 @@
     "id": "wAOS0D6TIOBHib03r3xqCxDF5Ac=",
     "isChatPlugin": false
   },
+  "WqKaJKsunZOU1J3q1DGFigrkdA0=": {
+    "type": "github",
+    "name": "wxXyo",
+    "author": "Anmour",
+    "team": "Bncr团队",
+    "version": "1.0.3",
+    "description": "wxXyo适配器（增强版：支持接收图片、视频、文件）",
+    "classification": [
+      "官方适配器"
+    ],
+    "filename": "wxXyo.js",
+    "fileDir": "/Adapter/wxXyo.js",
+    "systemVersionRange": "",
+    "isCron": false,
+    "isAdapter": true,
+    "isMod": false,
+    "isService": false,
+    "isAuthentication": false,
+    "isEncPlugin": false,
+    "id": "WqKaJKsunZOU1J3q1DGFigrkdA0=",
+    "isChatPlugin": false
+  },
   "DCUHzZuAIj+6wTXB3pkNhUx5ef0=": {
     "type": "github",
     "name": "ChatGPT",
