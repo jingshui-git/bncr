@@ -352,12 +352,12 @@
     "id": "GLMtmuDWmcsLWHrUDYy1LU9LZ28=",
     "isChatPlugin": true
   },
-  "73kEt944i4105gXMV3bBYQ7DE9Q=": {
+  "9jeAI+njPbk8assc0j6NMIFpBic=": {
     "type": "github",
     "name": "消息转发",
-    "author": "seven（增强版：支持QQ CQ 码解析）",
+    "author": "seven",
     "team": "jingshui",
-    "version": "3.3.3",
+    "version": "3.3.4",
     "description": "多规则独立配置的多平台消息转发：自动识别并转发图片、视频、语音、文件消息",
     "classification": [
       "功能插件"
@@ -371,7 +371,7 @@
     "isService": false,
     "isAuthentication": false,
     "isEncPlugin": false,
-    "id": "73kEt944i4105gXMV3bBYQ7DE9Q=",
+    "id": "9jeAI+njPbk8assc0j6NMIFpBic=",
     "isChatPlugin": true
   },
   "WDWf+EZYhodsQyEkP5sISTQvMEA=": {
