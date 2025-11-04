@@ -357,7 +357,7 @@
     "name": "消息转发",
     "author": "seven",
     "team": "jingshui",
-    "version": "3.3.5",
+    "version": "3.3.6",
     "description": "多规则独立配置的多平台消息转发：自动识别并转发图片、视频、语音、文件消息",
     "classification": [
       "功能插件"
