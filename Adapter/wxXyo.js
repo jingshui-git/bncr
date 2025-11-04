@@ -16,19 +16,19 @@
 /* 配置构造器 */
 const jsonSchema = BncrCreateSchema.object({
   enable: BncrCreateSchema.boolean()
-    。setTitle('是否开启适配器')
-    。setDescription('设置为关则不加载该适配器')
-    。setDefault(false),
+    .setTitle('是否开启适配器')
+    .setDescription('设置为关则不加载该适配器')
+    .setDefault(false),
   sendUrl: BncrCreateSchema.string()
-    。setTitle('上报地址')
-    。setDescription('无界收到消息要发送到的url')
-    。setDefault('')
+    .setTitle('上报地址')
+    .setDescription('无界收到消息要发送到的url')
+    .setDefault('')
 });
 
 /* 配置管理器 */
 const ConfigDB = new BncrPluginConfig(jsonSchema);
 
-module。exports = async () => {
+module.exports = async () => {
   await ConfigDB.get();
   if (!Object.keys(ConfigDB.userConfig).length) {
     sysMethod.startOutLogs('未启用Xyo适配器,退出.');
