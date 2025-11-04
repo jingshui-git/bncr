@@ -3,7 +3,7 @@
 * @team jingshui
 * @author seven
 * @platform tgBot qq ssh HumanTG wxQianxun wxXyo wechaty
-* @version 3.3.4
+* @version v3.3.5
 * @name 消息转发
 * @rule [\s\S]+
 * @priority 100000
@@ -24,12 +24,12 @@ const jsonSchema = BncrCreateSchema.object({
         BncrCreateSchema.object({
           from: BncrCreateSchema.string().setTitle('监听平台').setDefault(''),
           type: BncrCreateSchema.string()
-            。setTitle('监听类型')
-            。setEnum(["userId","groupId"])
-            。setEnumNames(["个人","群"])
-            。setDefault("groupId"),
+            .setTitle('监听类型')
+            .setEnum(["userId","groupId"])
+            .setEnumNames(["个人","群"])
+            .setDefault("groupId"),
           id: BncrCreateSchema.array(BncrCreateSchema.string())
-            。setTitle('监听ID列表').setDefault([])
+            .setTitle('监听ID列表').setDefault([])
         })
       ).setTitle('监听来源').setDefault([]),
 
@@ -65,7 +65,7 @@ const jsonSchema = BncrCreateSchema.object({
 
 const ConfigDB = new BncrPluginConfig(jsonSchema);
 
-// 解析 QQ CQ 码
+// 解析QQ CQ 码
 function parseCQ(msg) {
   const res = { type: 'text', path: '', text: msg };
   if (!msg) return res;
@@ -114,7 +114,7 @@ module.exports = async s => {
       if (msgInfo.from === 'qq' && msgInfo.msg.includes('[CQ:')) {
         const parsed = parseCQ(msgInfo.msg);
         mediaType = parsed.type;
-        mediaPath = parsed.path;
+        mediaPath = parsed.path; // URL地址或本地路径
         msgStr = parsed.text;
       }
 
@@ -136,16 +136,19 @@ module.exports = async s => {
         const timeStr = `${t.getFullYear()}-${pad(t.getMonth() + 1)}-${pad(t.getDate())} ${pad(t.getHours())}:${pad(t.getMinutes())}:${pad(t.getSeconds())}`;
         extra += `${extra ? '\n' : ''}[时间 ${timeStr}]`;
       }
+
+      // 拼接文本内容
       const fullMsg = `${msgStr}${conf.addText.replaceAll('\\n', '\n')}${extra ? '\n' + extra : ''}`;
 
-      // 转发
+      // 转发逻辑
       for (const dst of conf.toSender) {
         const obj = { platform: dst.from };
         obj[dst.type] = dst.id;
 
+        // 发送多媒体或文本
         if (mediaType !== 'text' && mediaPath) {
           obj.type = mediaType;
-          obj.path = mediaPath;
+          obj.path = mediaPath; // 使用URL避免HumanTG报ENOENT
         } else {
           obj.type = 'text';
           obj.msg = fullMsg;
