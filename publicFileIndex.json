@@ -352,13 +352,13 @@
     "id": "GLMtmuDWmcsLWHrUDYy1LU9LZ28=",
     "isChatPlugin": true
   },
-  "9jeAI+njPbk8assc0j6NMIFpBic=": {
+  "GugDyWaG+g+6dP+NvyGRxr2OAo8=": {
     "type": "github",
     "name": "消息转发",
-    "author": "seven",
+    "author": "seven（增强：支持QQ CQ码图片下载）",
     "team": "jingshui",
-    "version": "3.3.5",
-    "description": "多规则独立配置的多平台消息转发：自动识别并转发图片、视频、语音、文件消息",
+    "version": "3.3.6",
+    "description": "多规则独立配置的多平台消息转发：自动识别并下载QQ图片、视频，保证跨平台正确发送",
     "classification": [
       "功能插件"
     ],
@@ -371,7 +371,7 @@
     "isService": false,
     "isAuthentication": false,
     "isEncPlugin": false,
-    "id": "9jeAI+njPbk8assc0j6NMIFpBic=",
+    "id": "GugDyWaG+g+6dP+NvyGRxr2OAo8=",
     "isChatPlugin": true
   },
   "WDWf+EZYhodsQyEkP5sISTQvMEA=": {
