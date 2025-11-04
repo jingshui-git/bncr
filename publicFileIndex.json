@@ -352,6 +352,28 @@
     "id": "GLMtmuDWmcsLWHrUDYy1LU9LZ28=",
     "isChatPlugin": true
   },
+  "73kEt944i4105gXMV3bBYQ7DE9Q=": {
+    "type": "github",
+    "name": "消息转发",
+    "author": "seven（增强版：支持QQ CQ 码解析）",
+    "team": "jingshui",
+    "version": "v3.3.0",
+    "description": "多规则独立配置的多平台消息转发：自动识别并转发图片、视频、语音、文件消息",
+    "classification": [
+      "功能插件"
+    ],
+    "filename": "消息转发.js",
+    "fileDir": "/plugins/jingshui/消息转发.js",
+    "systemVersionRange": "",
+    "isCron": false,
+    "isAdapter": false,
+    "isMod": false,
+    "isService": false,
+    "isAuthentication": false,
+    "isEncPlugin": false,
+    "id": "73kEt944i4105gXMV3bBYQ7DE9Q=",
+    "isChatPlugin": true
+  },
   "WDWf+EZYhodsQyEkP5sISTQvMEA=": {
     "type": "github",
     "name": "热点趋势",
@@ -372,28 +394,6 @@
     "isAuthentication": false,
     "isEncPlugin": false,
     "id": "WDWf+EZYhodsQyEkP5sISTQvMEA=",
-    "isChatPlugin": true
-  },
-    "uIMWFYu8xQk+7/v2U84rUE9evWU=": {
-    "type": "github",
-    "name": "消息转发",
-    "author": "seven",
-    "team": "jingshui",
-    "version": "3.3.0",
-    "description": "监听某个人或群,当触发关键字,转发到指定目的地",
-    "classification": [
-      "功能插件"
-    ],
-    "filename": "消息转发.js",
-    "fileDir": "/plugins/jingshui/消息转发.js",
-    "systemVersionRange": "",
-    "isCron": false,
-    "isAdapter": false,
-    "isMod": false,
-    "isService": false,
-    "isAuthentication": false,
-    "isEncPlugin": false,
-    "id": "uIMWFYu8xQk+7/v2U84rUE9evWU=",
     "isChatPlugin": true
   },
   "ih+60fdomvT/AVSrG36DgBMRph0=": {
