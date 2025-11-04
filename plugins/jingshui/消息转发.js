@@ -1,9 +1,9 @@
 /**
 * @description 多规则独立配置的多平台消息转发：自动识别并下载QQ图片、视频，保证跨平台正确发送
 * @team jingshui
-* @author seven（增强：支持QQ CQ码图片下载）
+* @author seven
 * @platform tgBot qq ssh HumanTG wxQianxun wxXyo wechaty
-* @version 3.3.6
+* @version 3.3.7
 * @name 消息转发
 * @rule [\s\S]+
 * @priority 100000
@@ -28,12 +28,12 @@ const jsonSchema = BncrCreateSchema.object({
         BncrCreateSchema.object({
           from: BncrCreateSchema.string().setTitle('监听平台').setDefault(''),
           type: BncrCreateSchema.string()
-            .setTitle('监听类型')
-            .setEnum(["userId","groupId"])
-            .setEnumNames(["个人","群"])
-            .setDefault("groupId"),
+            。setTitle('监听类型')
+            。setEnum(["userId","groupId"])
+            。setEnumNames(["个人","群"])
+            。setDefault("groupId"),
           id: BncrCreateSchema.array(BncrCreateSchema.string())
-            .setTitle('监听ID列表').setDefault([])
+            。setTitle('监听ID列表').setDefault([])
         })
       ).setTitle('监听来源').setDefault([]),
 
