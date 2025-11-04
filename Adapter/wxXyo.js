@@ -6,7 +6,7 @@
  * @version 1.0.3
  * @description wxXyo适配器（增强版：支持接收图片、视频、文件）
  * @adapter true
- * @public false
+ * @public true
  * @disable false
  * @priority 2
  * @classification ["官方适配器"]
