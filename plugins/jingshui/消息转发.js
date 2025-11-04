@@ -3,19 +3,19 @@
 * @team jingshui
 * @author seven
 * @platform tgBot qq ssh HumanTG wxQianxun wxXyo wechaty
-* @version 3.3.9
+* @version 3.4.0
 * @name 消息转发
 * @rule [\s\S]+
 * @priority 100000
 * @admin false
 * @disable false
-* @public true
+* @public false
 * @classification ["功能插件"]
 */
-
 const fs = require('fs');
 const path = require('path');
-const fetch = require('node-fetch');
+// 兼容 node-fetch ESModule 形式
+const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
 
 const jsonSchema = BncrCreateSchema.object({
   configs: BncrCreateSchema.array(
@@ -23,7 +23,6 @@ const jsonSchema = BncrCreateSchema.object({
       enable: BncrCreateSchema.boolean().setTitle('启用').setDefault(true),
       showSource: BncrCreateSchema.boolean().setTitle('显示来源').setDefault(true),
       showTime: BncrCreateSchema.boolean().setTitle('显示时间').setDefault(true),
-
       listen: BncrCreateSchema.array(
         BncrCreateSchema.object({
           from: BncrCreateSchema.string().setTitle('监听平台').setDefault(''),
@@ -36,10 +35,8 @@ const jsonSchema = BncrCreateSchema.object({
             .setTitle('监听ID列表').setDefault([])
         })
       ).setTitle('监听来源').setDefault([]),
-
       rule: BncrCreateSchema.array(BncrCreateSchema.string())
         .setTitle('触发关键词').setDefault(['任意']),
-
       toSender: BncrCreateSchema.array(
         BncrCreateSchema.object({
           id: BncrCreateSchema.string().setTitle('目标ID').setDefault(""),
@@ -51,14 +48,12 @@ const jsonSchema = BncrCreateSchema.object({
             .setTitle('目标平台').setDefault('')
         })
       ).setTitle('转发目标').setDefault([]),
-
       replace: BncrCreateSchema.array(
         BncrCreateSchema.object({
           old: BncrCreateSchema.string().setTitle('旧消息').setDefault(""),
           new: BncrCreateSchema.string().setTitle('新消息').setDefault("")
         })
       ).setTitle('替换信息').setDefault([]),
-
       addText: BncrCreateSchema.string()
         .setTitle('自定义尾巴')
         .setDescription('尾部追加信息，“\\n”换行')
@@ -66,7 +61,6 @@ const jsonSchema = BncrCreateSchema.object({
     })
   )
 });
-
 const ConfigDB = new BncrPluginConfig(jsonSchema);
 
 /** 解析QQ CQ 码并下载图片返回本地路径 **/
@@ -83,8 +77,8 @@ async function parseAndDownload(msg) {
     const filePath = path.join(tmpDir, `${Date.now()}.${res.type === 'video' ? 'mp4' : res.type === 'audio' ? 'mp3' : 'png'}`);
     try {
       const response = await fetch(url);
-      const buffer = await response.buffer();
-      fs.writeFileSync(filePath, buffer);
+      const buffer = await response.arrayBuffer();
+      fs.writeFileSync(filePath, Buffer.from(buffer));
       res.path = filePath;
     } catch (e) {
       console.error('下载文件失败:', e.message);
@@ -104,7 +98,6 @@ module.exports = async s => {
 
     const configs = (ConfigDB.userConfig.configs || []).filter(o => o.enable);
     const msgInfo = s.msgInfo;
-
     console.log(`[消息] 平台:${msgInfo.from}, 群:${msgInfo.groupId}, 用户:${msgInfo.userId}, 内容:${msgInfo.msg}`);
 
     for (const conf of configs) {
