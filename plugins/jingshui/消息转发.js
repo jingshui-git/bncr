@@ -24,17 +24,17 @@ const jsonSchema = BncrCreateSchema.object({
         BncrCreateSchema.object({
           from: BncrCreateSchema.string().setTitle('监听平台').setDefault(''),
           type: BncrCreateSchema.string()
-            。setTitle('监听类型')
-            。setEnum(["userId","groupId"])
-            。setEnumNames(["个人","群"])
-            。setDefault("groupId"),
+            .setTitle('监听类型')
+            .setEnum(["userId","groupId"])
+            .setEnumNames(["个人","群"])
+            .setDefault("groupId"),
           id: BncrCreateSchema.array(BncrCreateSchema.string())
-            。setTitle('监听ID列表').setDefault([])
+            .setTitle('监听ID列表').setDefault([])
         })
       ).setTitle('监听来源').setDefault([]),
 
       rule: BncrCreateSchema.array(BncrCreateSchema.string())
-        .setTitle('触发关键词').setDefault(['任意']),
+        .setTitle('触发关键词').setDefault(['任意'])，
 
       toSender: BncrCreateSchema.array(
         BncrCreateSchema.object({
@@ -42,7 +42,7 @@ const jsonSchema = BncrCreateSchema.object({
           type: BncrCreateSchema.string()
             .setTitle('目标类型')
             .setEnum(["userId","groupId"])
-            .setEnumNames(["个人","群"]).setDefault("groupId"),
+            .setEnumNames(["个人","群"]).setDefault("groupId")，
           from: BncrCreateSchema.string()
             .setTitle('目标平台').setDefault('')
         })
