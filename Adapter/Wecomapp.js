@@ -3,7 +3,7 @@
  * @author jingshui
  * @name Wecomapp
  * @team jingshui
- * @version 1.0.0
+ * @version 1.0.1
  * @description 企业微信应用适配器 - 支持完整对话功能
  * @adapter true
  * @public false
@@ -20,21 +20,21 @@ const jsonSchema = BncrCreateSchema.object({
   debug: BncrCreateSchema.boolean().setTitle('调试模式').setDefault(false),
   
   // 企业微信应用配置
-  corpId: BncrCreateSchema.string().setTitle('企业ID').setDescription('企业微信管理后台获取').setDefault('')，
+  corpId: BncrCreateSchema.string().setTitle('企业ID').setDescription('企业微信管理后台获取').setDefault(''),
   agentId: BncrCreateSchema.string().setTitle('应用ID').setDescription('企业微信应用AgentId').setDefault(''),
-  secret: BncrCreateSchema。string()。setTitle('应用密钥').setDescription('企业微信应用Secret').setDefault(''),
+  secret: BncrCreateSchema.string().setTitle('应用密钥').setDescription('企业微信应用Secret').setDefault(''),
   
   // 消息接收配置
-  receiveToken: BncrCreateSchema。string().setTitle('接收消息Token').setDescription('企业微信应用接收消息的Token').setDefault('BncrWecomAdapter'),
-  receiveEncodingAESKey: BncrCreateSchema。string().setTitle('接收消息EncodingAESKey').setDescription('企业微信应用接收消息的EncodingAESKey').setDefault(''),
+  receiveToken: BncrCreateSchema.string().setTitle('接收消息Token').setDescription('企业微信应用接收消息的Token').setDefault('BncrWecomAdapter'),
+  receiveEncodingAESKey: BncrCreateSchema.string().setTitle('接收消息EncodingAESKey').setDescription('企业微信应用接收消息的EncodingAESKey').setDefault(''),
   listenPort: BncrCreateSchema.string().setTitle('监听端口').setDescription('接收消息的端口').setDefault('8898'),
   
   // 消息处理配置
   messageHandling: BncrCreateSchema.object({
-    enableImageForward: BncrCreateSchema.boolean()。setTitle('启用图片转发').setDefault(true),
-    imageTemplate: BncrCreateSchema。string()。setTitle('图片消息模板').setDefault('🖼️ [企业微信图片]'),
-    enableEventForward: BncrCreateSchema.boolean()。setTitle('启用事件转发')。setDefault(false),
-    autoReplyEnabled: BncrCreateSchema。boolean().setTitle('启用自动回复').setDefault(false)
+    enableImageForward: BncrCreateSchema.boolean().setTitle('启用图片转发').setDefault(true),
+    imageTemplate: BncrCreateSchema.string().setTitle('图片消息模板').setDefault('🖼️ [企业微信图片]'),
+    enableEventForward: BncrCreateSchema.boolean().setTitle('启用事件转发').setDefault(false),
+    autoReplyEnabled: BncrCreateSchema.boolean().setTitle('启用自动回复').setDefault(false)
   }).setTitle('消息处理配置').setDefault({})
 });
 
@@ -43,12 +43,12 @@ const ConfigDB = new BncrPluginConfig(jsonSchema);
 // 企业微信API工具类
 class WecomAPI {
   constructor(corpId, agentId, secret) {
-    this。corpId = corpId;
-    this。agentId = agentId;
-    this。secret = secret;
-    this。accessToken = '';
-    this。tokenExpireTime = 0;
-    this。debug = false;
+    this.corpId = corpId;
+    this.agentId = agentId;
+    this.secret = secret;
+    this.accessToken = '';
+    this.tokenExpireTime = 0;
+    this.debug = false;
   }
   
   setDebug(debug) {
@@ -57,35 +57,35 @@ class WecomAPI {
   
   log(message) {
     if (this.debug) {
-      console。log(`[WecomAPI] ${message}`);
+      console.log(`[WecomAPI] ${message}`);
     }
   }
   
   async getAccessToken() {
     // 检查token是否过期
     if (this.accessToken && Date.now() < this.tokenExpireTime) {
-      return this。accessToken;
+      return this.accessToken;
     }
     
     try {
       const request = require('util').promisify(require('request'));
       const url = `https://qyapi.weixin.qq.com/cgi-bin/gettoken?corpid=${this.corpId}&corpsecret=${this.secret}`;
       
-      this。log(`获取AccessToken: ${url}`);
+      this.log(`获取AccessToken: ${url}`);
       const response = await request({ 
-        url， 
-        method: 'GET'， 
-        json: true，
+        url, 
+        method: 'GET', 
+        json: true,
         timeout: 10000 
       });
       
       if (response.body && response.body.errcode === 0) {
         this.accessToken = response.body.access_token;
-        this。tokenExpireTime = Date.当前() + (response.body.expires_in - 60) * 1000;
+        this.tokenExpireTime = Date.now() + (response.body.expires_in - 60) * 1000;
         this.log(`获取AccessToken成功: ${this.accessToken.substring(0, 20)}...`);
-        return this。accessToken;
+        return this.accessToken;
       } else {
-        const errMsg = response.body ? response.body。errmsg : '请求失败';
+        const errMsg = response.body ? response.body.errmsg : '请求失败';
         throw new Error(`获取AccessToken失败: ${errMsg}`);
       }
     } catch (error) {
@@ -102,7 +102,7 @@ class WecomAPI {
       const url = `https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=${token}`;
       const data = {
         touser: toUser || '',
-        msgtype: 'text'，
+        msgtype: 'text',
         agentid: this.agentId,
         text: {
           content: content
@@ -448,7 +448,7 @@ module.exports = async () => {
   };
 
   /** 推送消息方法 */
-  wecomapp。push = async function (replyInfo) {
+  wecomapp.push = async function (replyInfo) {
     return this.reply(replyInfo);
   };
 
@@ -460,13 +460,13 @@ module.exports = async () => {
         return false;
       }
       
-      messageProcessor。log(`撤回消息: ${msgId}`);
+      messageProcessor.log(`撤回消息: ${msgId}`);
       // 企业微信不支持撤回通过API发送的消息
-      console。log('企业微信适配器: 暂不支持消息撤回功能');
+      console.log('企业微信适配器: 暂不支持消息撤回功能');
       return false;
       
     } catch (error) {
-      console.error(`企业微信适配器撤回消息错误: ${error。message}`);
+      console.error(`企业微信适配器撤回消息错误: ${error.message}`);
       return false;
     }
   };
@@ -482,13 +482,13 @@ module.exports = async () => {
     };
   };
 
-  console。log(`🎉 企业微信适配器启动成功!`);
-  console。log(`🏢 企业ID: ${corpId}`);
+  console.log(`🎉 企业微信适配器启动成功!`);
+  console.log(`🏢 企业ID: ${corpId}`);
   console.log(`📱 应用ID: ${agentId}`);
-  console。log(`🔊 监听端口: ${listenPort}`);
-  console。log(`🔑 Token: ${receiveToken}`);
-  console。log(`🗝️ EncodingAESKey: ${receiveEncodingAESKey ? '已设置' : '未设置'}`);
-  console。log(`📝 请在企业微信应用设置中配置接收消息URL: http://你的服务器IP:${listenPort}/api/bot/wecomapp`);
+  console.log(`🔊 监听端口: ${listenPort}`);
+  console.log(`🔑 Token: ${receiveToken}`);
+  console.log(`🗝️ EncodingAESKey: ${receiveEncodingAESKey ? '已设置' : '未设置'}`);
+  console.log(`📝 请在企业微信应用设置中配置接收消息URL: http://你的服务器IP:${listenPort}/api/bot/wecomapp`);
 
   return wecomapp;
 };
