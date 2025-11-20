@@ -3,7 +3,7 @@
 * @team jingshui
 * @author seven（优化图片消息处理和格式）
 * @platform tgBot qq ssh HumanTG wxQianxun wxXyo wechaty wxQianxunPro wecomapp
-* @version 5.2.0
+* @version 5.3.0
 * @name 消息转发
 * @rule [\s\S]+
 * @priority 100000
@@ -75,7 +75,8 @@ const jsonSchema = BncrCreateSchema.object({
         retryOnFail: BncrCreateSchema.boolean().setTitle('失败重试').setDefault(true),
         maxRetries: BncrCreateSchema.number().setTitle('最大重试次数').setDefault(3),
         enableSourceInfo: BncrCreateSchema.boolean().setTitle('启用来源信息').setDefault(true),
-        cacheEnabled: BncrCreateSchema.boolean().setTitle('启用消息缓存').setDefault(true)
+        cacheEnabled: BncrCreateSchema.boolean().setTitle('启用消息缓存').setDefault(true),
+        simpleLogs: BncrCreateSchema.boolean().setTitle('简洁日志模式').setDescription('开启后只显示关键日志，隐藏详细处理过程').setDefault(false)
       }).setTitle('高级设置').setDefault({})
     })
   )
@@ -87,7 +88,8 @@ const ConfigDB = new BncrPluginConfig(jsonSchema);
 class MessageProcessor {
   constructor() {
     this.debug = false;
-    this.messageCache = new Map(); // 消息去重缓存
+    this.simpleLogs = false;
+    this.messageCache = new Map();
     this.platformNames = {
       'qq': 'QQ',
       'wxQianxunPro': '微信',
@@ -105,10 +107,27 @@ class MessageProcessor {
     this.debug = debug;
   }
   
+  setSimpleLogs(simpleLogs) {
+    this.simpleLogs = simpleLogs;
+  }
+  
+  // 详细日志 - 只在调试模式且非简洁模式显示
   log(message) {
-    if (this.debug) {
-      console.log(`[消息转发 v5.2.0] ${message}`);
+    if (this.debug && !this.simpleLogs) {
+      console.log(`[消息转发] ${message}`);
     }
+  }
+  
+  // 简洁日志 - 只在简洁模式显示
+  simpleLog(message) {
+    if (this.simpleLogs) {
+      console.log(`[转发] ${message}`);
+    }
+  }
+  
+  // 关键日志 - 无论如何都会显示
+  keyLog(message) {
+    console.log(`[消息转发] ${message}`);
   }
   
   // 自动清理临时图片和缓存
@@ -144,7 +163,7 @@ class MessageProcessor {
         }
       }
       
-      if (cleanedCount > 0 && this.debug) {
+      if (cleanedCount > 0 && this.debug && !this.simpleLogs) {
         this.log(`🧹 清理 ${cleanedCount} 个过期图片文件`);
       }
     } catch (error) {
@@ -210,7 +229,6 @@ class MessageProcessor {
   parseCQ(msg) {
     if (!msg) return { type: 'text', text: '', url: '', hasMedia: false, mediaType: '' };
     
-    // 检查CQ图片码
     if (msg.includes('[CQ:image')) {
       const urlReg = /\[CQ:image[^\]]*?url=([^,\]]+)/i;
       const urlMatch = msg.match(urlReg);
@@ -299,7 +317,6 @@ class MessageProcessor {
     
     const { enableText, enableImage, enableVoice, enableVideo } = conf.messageFilter;
     
-    // 检测消息类型
     const isImageMessage = 
       (msgInfo.from === 'wxQianxunPro' && msgInfo.msg.includes('[pic=')) ||
       (msgInfo.from === 'qq' && msgInfo.msg.includes('[CQ:image')) ||
@@ -308,7 +325,6 @@ class MessageProcessor {
     const isVoiceMessage = msgInfo._isVoice === true;
     const isVideoMessage = msgInfo._isVideo === true;
     
-    // 类型过滤检查
     if (isImageMessage && !enableImage) {
       this.log('图片消息被过滤');
       return false;
@@ -369,7 +385,6 @@ class MessageProcessor {
     let isImageMessage = false;
     let imagePath = '';
 
-    // 处理wxQianxunPro图片消息
     if (msgInfo.from === 'wxQianxunPro' && msgInfo.msg.includes('[pic=')) {
       const parsed = this.parseWxQianxunProImage(msgInfo.msg);
       if (parsed.hasImage) {
@@ -380,7 +395,6 @@ class MessageProcessor {
       }
     }
 
-    // 应用替换规则
     finalMsg = this.applyReplaceRules(finalMsg, conf.replace);
     
     const obj = { platform: dst.from };
@@ -389,7 +403,6 @@ class MessageProcessor {
     const extra = this.buildExtraInfo(msgInfo, conf);
     const textContent = this.buildFinalMessage(finalMsg, extra, conf.addText);
     
-    // 处理消息发送
     if (isImageMessage && imagePath) {
       this.log(`发送图片到相同平台`);
       obj.type = 'file';
@@ -412,7 +425,6 @@ class MessageProcessor {
     let mediaType = '';
     let mediaSource = '';
 
-    // 检测消息类型
     if (msgInfo.from === 'wxQianxunPro' && msgInfo.msg.includes('[pic=')) {
       const parsed = this.parseWxQianxunProImage(msgInfo.msg);
       if (parsed.hasImage) {
@@ -447,7 +459,6 @@ class MessageProcessor {
       this.log('检测到微信XML消息');
     }
 
-    // 应用替换规则
     finalMsg = this.applyReplaceRules(finalMsg, conf.replace);
     
     const obj = { platform: dst.from };
@@ -455,10 +466,8 @@ class MessageProcessor {
     
     const extra = this.buildExtraInfo(msgInfo, conf);
     
-    // 构建最终消息
     let textContent = finalMsg || '';
     
-    // 添加媒体提示
     const mediaIcons = { image: '🖼️', voice: '🎤', video: '📹' };
     if (mediaType && mediaIcons[mediaType]) {
       const mediaLabel = `${mediaIcons[mediaType]} [${mediaSource}${mediaType === 'image' ? '图片' : mediaType === 'voice' ? '语音' : '视频'}消息]`;
@@ -472,6 +481,10 @@ class MessageProcessor {
     obj.msg = textContent;
     
     this.log(`跨平台转发到 ${dst.from}: ${textContent.substring(0, 100)}`);
+    
+    // 简洁日志
+    this.simpleLog(`→ ${dst.from} : ${textContent.substring(0, 100)}`);
+    
     return obj;
   }
 
@@ -505,7 +518,6 @@ class MessageProcessor {
     } catch (error) {
       this.log(`发送失败: ${error.message}`);
       
-      // 重试逻辑
       const maxRetries = conf.advanced?.maxRetries || 3;
       if (conf.advanced?.retryOnFail && retryCount < maxRetries) {
         this.log(`第${retryCount + 1}次重试...`);
@@ -529,31 +541,38 @@ module.exports = async s => {
 
     if (!configs.length) return 'next';
 
-    // 设置调试模式
+    // 设置调试模式和简洁日志模式
     const debugMode = configs.some(conf => conf.advanced?.enableDebug);
+    const simpleLogs = configs.some(conf => conf.advanced?.simpleLogs);
     messageProcessor.setDebug(debugMode);
+    messageProcessor.setSimpleLogs(simpleLogs);
 
     // 清理资源
     messageProcessor.cleanup();
 
-    // 记录接收到的消息
+    // 关键日志 - 无论如何都会显示
+    messageProcessor.keyLog(`收到 ${msgInfo.from} 消息: ${msgInfo.msg ? msgInfo.msg.substring(0, 50) : '[空消息]'}`);
+    
+    // 详细日志
     messageProcessor.log(`📨 收到消息: 平台=${msgInfo.from}, 用户=${msgInfo.userId}, 群组=${msgInfo.groupId}`);
     
-    if (debugMode) {
-      messageProcessor.log(`消息内容: ${msgInfo.msg ? msgInfo.msg.substring(0, 200) : '[空消息]'}`);
+    if (debugMode && !simpleLogs) {
+      messageProcessor.log(`🔍 消息详情: ${JSON.stringify(msgInfo)}`);
     }
+
+    // 简洁日志
+    messageProcessor.simpleLog(`← ${msgInfo.from} : ${msgInfo.msg || '[媒体消息]'}`);
 
     // 消息去重检查
     const cacheEnabled = configs.some(conf => conf.advanced?.cacheEnabled !== false);
     if (cacheEnabled && messageProcessor.isDuplicateMessage(msgInfo)) {
-      messageProcessor.log('跳过重复消息');
+      messageProcessor.keyLog('跳过重复消息');
       return 'next';
     }
 
     let processedCount = 0;
 
     for (const conf of configs) {
-      // 检查来源匹配
       const hitSource = conf.listen.some(src =>
         msgInfo.from === src.from && src.id.includes(String(msgInfo[src.type]))
       );
@@ -562,7 +581,6 @@ module.exports = async s => {
         continue;
       }
 
-      // 检查关键词匹配
       const hitKeyword = conf.rule.some(k =>
         k === '任意' || (k && msgInfo.msg?.includes(k)) ||
         (msgInfo.from === 'wecomapp' && (!msgInfo.msg || msgInfo.msg === '') && k === '任意')
@@ -572,14 +590,12 @@ module.exports = async s => {
         continue;
       }
 
-      // 检查消息类型过滤
       if (!messageProcessor.isMessageTypeAllowed(msgInfo, conf)) {
         continue;
       }
 
       messageProcessor.log(`✅ 配置匹配成功，开始处理消息`);
 
-      // 转发到各个目标
       for (const dst of conf.toSender) {
         try {
           if (!messageProcessor.validateTargetConfig(dst, msgInfo)) {
@@ -603,9 +619,9 @@ module.exports = async s => {
     }
 
     if (processedCount > 0) {
-      messageProcessor.log(`🎉 消息转发完成，共发送 ${processedCount} 条消息`);
+      messageProcessor.keyLog(`转发完成: ${processedCount} 条消息`);
     } else {
-      messageProcessor.log(`ℹ️ 没有消息需要转发`);
+      messageProcessor.keyLog(`没有消息需要转发`);
     }
 
   } catch (err) {
