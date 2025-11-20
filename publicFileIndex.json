@@ -88,6 +88,28 @@
     "id": "7pS6h6sD/BQNrfnkbAbVkPYU9DE=",
     "isChatPlugin": false
   },
+  "vgi94FtwpjHpVNpQrC9Fb3Q8BIA=": {
+    "type": "github",
+    "name": "Wecomapp",
+    "author": "jingshui",
+    "team": "jingshui",
+    "version": "1.0.0",
+    "description": "Wecomapp适配器",
+    "classification": [
+      "官方适配器"
+    ],
+    "filename": "Wecomapp.js",
+    "fileDir": "/Adapter/Wecomapp.js",
+    "systemVersionRange": "",
+    "isCron": false,
+    "isAdapter": true,
+    "isMod": false,
+    "isService": false,
+    "isAuthentication": false,
+    "isEncPlugin": false,
+    "id": "vgi94FtwpjHpVNpQrC9Fb3Q8BIA=",
+    "isChatPlugin": false
+  },
   "/dYGSmV9Q9z/dctWzOcKXrN9Q04=": {
     "type": "github",
     "name": "wxMP",
@@ -328,6 +350,28 @@
     "isAuthentication": false,
     "isEncPlugin": false,
     "id": "GLMtmuDWmcsLWHrUDYy1LU9LZ28=",
+    "isChatPlugin": true
+  },
+  "9jeAI+njPbk8assc0j6NMIFpBic=": {
+    "type": "github",
+    "name": "消息转发",
+    "author": "seven",
+    "team": "jingshui",
+    "version": "5.0.0",
+    "description": "多规则独立配置的多平台消息转发：自动识别并转发图片、视频、语音、文件消息",
+    "classification": [
+      "功能插件"
+    ],
+    "filename": "消息转发.js",
+    "fileDir": "/plugins/jingshui/消息转发.js",
+    "systemVersionRange": "",
+    "isCron": false,
+    "isAdapter": false,
+    "isMod": false,
+    "isService": false,
+    "isAuthentication": false,
+    "isEncPlugin": false,
+    "id": "9jeAI+njPbk8assc0j6NMIFpBic=",
     "isChatPlugin": true
   },
   "WDWf+EZYhodsQyEkP5sISTQvMEA=": {
