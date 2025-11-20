@@ -3,7 +3,7 @@
 * @team jingshui
 * @author seven（优化图片消息处理和格式）
 * @platform tgBot qq ssh HumanTG wxQianxun wxXyo wechaty wxQianxunPro wecomapp
-* @version 5.0.0
+* @version 5.2.0
 * @name 消息转发
 * @rule [\s\S]+
 * @priority 100000
@@ -24,7 +24,9 @@ const jsonSchema = BncrCreateSchema.object({
       messageFilter: BncrCreateSchema.object({
         enableText: BncrCreateSchema.boolean().setTitle('转发文字消息').setDefault(true),
         enableImage: BncrCreateSchema.boolean().setTitle('转发图片消息').setDefault(true),
-        enableFile: BncrCreateSchema.boolean().setTitle('转发文件消息').setDefault(true)
+        enableFile: BncrCreateSchema.boolean().setTitle('转发文件消息').setDefault(true),
+        enableVoice: BncrCreateSchema.boolean().setTitle('转发语音消息').setDefault(false),
+        enableVideo: BncrCreateSchema.boolean().setTitle('转发视频消息').setDefault(false)
       }).setTitle('消息类型过滤').setDefault({}),
 
       listen: BncrCreateSchema.array(
@@ -71,7 +73,9 @@ const jsonSchema = BncrCreateSchema.object({
       advanced: BncrCreateSchema.object({
         enableDebug: BncrCreateSchema.boolean().setTitle('启用调试日志').setDefault(false),
         retryOnFail: BncrCreateSchema.boolean().setTitle('失败重试').setDefault(true),
-        maxRetries: BncrCreateSchema.number().setTitle('最大重试次数').setDefault(3)
+        maxRetries: BncrCreateSchema.number().setTitle('最大重试次数').setDefault(3),
+        enableSourceInfo: BncrCreateSchema.boolean().setTitle('启用来源信息').setDefault(true),
+        cacheEnabled: BncrCreateSchema.boolean().setTitle('启用消息缓存').setDefault(true)
       }).setTitle('高级设置').setDefault({})
     })
   )
@@ -83,6 +87,18 @@ const ConfigDB = new BncrPluginConfig(jsonSchema);
 class MessageProcessor {
   constructor() {
     this.debug = false;
+    this.messageCache = new Map(); // 消息去重缓存
+    this.platformNames = {
+      'qq': 'QQ',
+      'wxQianxunPro': '微信',
+      'wxQianxun': '微信',
+      'wechaty': '微信',
+      'tgBot': 'Telegram',
+      'HumanTG': 'Telegram',
+      'wecomapp': '企业微信',
+      'ssh': 'SSH',
+      'wxXyo': '微信'
+    };
   }
   
   setDebug(debug) {
@@ -91,27 +107,30 @@ class MessageProcessor {
   
   log(message) {
     if (this.debug) {
-      console.log(`[消息转发] ${message}`);
+      console.log(`[消息转发 v5.2.0] ${message}`);
     }
   }
   
-  // 自动清理临时图片函数
+  // 自动清理临时图片和缓存
+  cleanup() {
+    this.cleanupTempImages();
+    this.cleanupMessageCache();
+  }
+  
   cleanupTempImages() {
     try {
       const fs = require('fs');
       const path = require('path');
       const tempDir = '/bncr/BncrData/temp_images';
       
-      if (!fs.existsSync(tempDir)) {
-        return;
-      }
+      if (!fs.existsSync(tempDir)) return;
       
       const files = fs.readdirSync(tempDir);
       const now = Date.now();
       const oneHour = 60 * 60 * 1000;
       let cleanedCount = 0;
       
-      files.forEach(file => {
+      for (const file of files) {
         try {
           const filePath = path.join(tempDir, file);
           const stats = fs.statSync(filePath);
@@ -120,17 +139,42 @@ class MessageProcessor {
             fs.unlinkSync(filePath);
             cleanedCount++;
           }
-        } catch (fileError) {
-          // 忽略清理错误
+        } catch {
+          // 忽略错误
         }
-      });
+      }
       
       if (cleanedCount > 0 && this.debug) {
-        this.log(`🧹 自动清理完成，共清理 ${cleanedCount} 个过期图片文件`);
+        this.log(`🧹 清理 ${cleanedCount} 个过期图片文件`);
       }
     } catch (error) {
-      // 静默处理清理错误
+      // 静默处理错误
     }
+  }
+  
+  // 清理消息缓存
+  cleanupMessageCache() {
+    const now = Date.now();
+    const fiveMinutes = 5 * 60 * 1000;
+    
+    for (const [key, timestamp] of this.messageCache.entries()) {
+      if (now - timestamp > fiveMinutes) {
+        this.messageCache.delete(key);
+      }
+    }
+  }
+  
+  // 消息去重检查
+  isDuplicateMessage(msgInfo) {
+    const cacheKey = `${msgInfo.from}_${msgInfo.msgId}_${msgInfo.msg}`;
+    const now = Date.now();
+    
+    if (this.messageCache.has(cacheKey)) {
+      return true;
+    }
+    
+    this.messageCache.set(cacheKey, now);
+    return false;
   }
 
   // 处理wxQianxunPro图片消息格式
@@ -138,21 +182,19 @@ class MessageProcessor {
     const picReg = /\[pic=([^,]+),isDecrypt=1\]/i;
     const match = msg.match(picReg);
     
-    if (match && match[1]) {
-      let localPath = match[1].replace(/\\/g, '/');
-      
-      // 提取文字内容（移除图片代码）
+    if (match?.[1]) {
+      const localPath = match[1].replace(/\\/g, '/');
       const textContent = msg.replace(/\[pic=[^\]]+\]/g, '').trim();
       
-      this.log(`解析到wxQianxunPro图片: ${require('path').basename(localPath)}`);
+      this.log(`解析wxQianxunPro图片: ${require('path').basename(localPath)}`);
       
       return {
         type: 'image',
-        localPath: localPath,
+        localPath,
         originalMsg: msg,
         hasImage: true,
         fileName: require('path').basename(localPath),
-        textContent: textContent
+        textContent
       };
     }
     
@@ -166,75 +208,60 @@ class MessageProcessor {
 
   // 解析 QQ CQ 码
   parseCQ(msg) {
-    const result = { 
-      type: 'text', 
-      text: '', 
-      url: '',
-      hasMedia: false,
-      mediaType: ''
-    };
+    if (!msg) return { type: 'text', text: '', url: '', hasMedia: false, mediaType: '' };
     
-    if (!msg) return result;
-    
-    // 检查是否包含CQ图片码
+    // 检查CQ图片码
     if (msg.includes('[CQ:image')) {
       const urlReg = /\[CQ:image[^\]]*?url=([^,\]]+)/i;
       const urlMatch = msg.match(urlReg);
       
-      if (urlMatch && urlMatch[1]) {
-        result.hasMedia = true;
-        result.mediaType = 'image';
-        result.url = decodeURIComponent(urlMatch[1]);
-        
-        // 提取文字内容（移除CQ码）
+      if (urlMatch?.[1]) {
+        const url = decodeURIComponent(urlMatch[1]);
         const textContent = msg.replace(/\[CQ:[^\]]+\]/g, '').trim();
+        const hasText = textContent.length > 0;
         
-        if (textContent) {
-          result.type = 'mixed';
-          result.text = textContent;
-          this.log(`解析到QQ混合消息: 图片 + 文字 "${result.text.substring(0, 50)}"`);
-        } else {
-          result.type = 'image';
-          result.text = '';
-          this.log('解析到QQ纯图片消息');
-        }
+        this.log(hasText ? 
+          `解析QQ混合消息: 图片 + 文字 "${textContent.substring(0, 50)}"` : 
+          '解析QQ纯图片消息'
+        );
         
-        return result;
+        return {
+          type: hasText ? 'mixed' : 'image',
+          text: textContent,
+          url,
+          hasMedia: true,
+          mediaType: 'image'
+        };
       }
     }
     
-    result.text = msg;
-    return result;
+    return { type: 'text', text: msg, url: '', hasMedia: false, mediaType: '' };
   }
 
   // 解析微信XML消息
   parseWechatXML(xmlContent) {
     try {
-      if (!xmlContent || !xmlContent.includes('<msg>')) {
+      if (!xmlContent?.includes('<msg>')) {
         return { type: 'text', content: xmlContent };
       }
       
-      const titleMatch = xmlContent.match(/<title>([^<]+)<\/title>/);
-      const title = titleMatch ? titleMatch[1] : '';
+      const title = xmlContent.match(/<title>([^<]+)<\/title>/)?.[1] || '';
+      const description = xmlContent.match(/<des>([^<]*)<\/des>/)?.[1] || '';
+      const referContent = xmlContent.match(/<content>([^<]+)<\/content>/)?.[1] || '';
       
-      const desMatch = xmlContent.match(/<des>([^<]*)<\/des>/);
-      const description = desMatch ? desMatch[1] : '';
+      const readableContent = [
+        title && `📱 分享: ${title}`,
+        description && `📝 ${description}`,
+        referContent && `💬 引用: ${referContent}`
+      ].filter(Boolean).join('\n') || '[微信消息]';
       
-      const referContentMatch = xmlContent.match(/<content>([^<]+)<\/content>/);
-      const referContent = referContentMatch ? referContentMatch[1] : '';
-      
-      let readableContent = '';
-      if (title) readableContent += `📱 分享: ${title}`;
-      if (description) readableContent += `\n📝 ${description}`;
-      if (referContent) readableContent += `\n💬 引用: ${referContent}`;
-      
-      this.log(`解析到微信XML消息: ${title || '无标题'}`);
+      this.log(`解析微信XML消息: ${title || '无标题'}`);
       
       return { 
         type: 'xml_message', 
-        content: readableContent || '[微信消息]',
-        title: title,
-        description: description 
+        content: readableContent,
+        title,
+        description 
       };
     } catch (error) {
       return { type: 'text', content: '[微信特殊消息]' };
@@ -243,62 +270,95 @@ class MessageProcessor {
 
   // 获取平台显示名称
   getPlatformDisplayName(platform) {
-    const platformNames = {
-      'qq': 'QQ',
-      'wxQianxunPro': '微信',
-      'wxQianxun': '微信',
-      'wechaty': '微信',
-      'tgBot': 'Telegram',
-      'HumanTG': 'Telegram',
-      'wecomapp': '企业微信',
-      'ssh': 'SSH',
-      'wxXyo': '微信',
-      'wecomapp': '企业微信'
-    };
-    return platformNames[platform] || platform;
+    return this.platformNames[platform] || platform;
   }
 
   // 构建额外信息
   buildExtraInfo(msgInfo, conf) {
-    let extra = '';
+    const parts = [];
     
-    if (conf.showSource) {
-      const srcType = msgInfo.groupId ? '群' : '用户';
+    if (conf.showSource && conf.advanced?.enableSourceInfo !== false) {
+      const srcType = msgInfo.groupId && msgInfo.groupId !== '0' ? '群' : '用户';
       const platformName = this.getPlatformDisplayName(msgInfo.from);
-      extra += `[来自${platformName}${srcType}]`;
+      const sourceId = msgInfo.groupId && msgInfo.groupId !== '0' ? msgInfo.groupId : msgInfo.userId;
+      parts.push(`[来自${platformName}${srcType}:${sourceId}]`);
     }
     
     if (conf.showTime) {
       const t = new Date();
-      const pad = n => n.toString().padStart(2, '0');
-      const timeStr = `${t.getFullYear()}-${pad(t.getMonth() + 1)}-${pad(t.getDate())} ${pad(t.getHours())}:${pad(t.getMinutes())}:${pad(t.getSeconds())}`;
-      extra += `${extra ? '\n' : ''}[${timeStr}]`;
+      const timeStr = `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')} ${String(t.getHours()).padStart(2, '0')}:${String(t.getMinutes()).padStart(2, '0')}:${String(t.getSeconds()).padStart(2, '0')}`;
+      parts.push(`[${timeStr}]`);
     }
     
-    return extra;
+    return parts.join('\n');
   }
 
   // 检查消息类型是否允许转发
   isMessageTypeAllowed(msgInfo, conf) {
     if (!conf.messageFilter) return true;
     
-    // 检查是否为图片消息
+    const { enableText, enableImage, enableVoice, enableVideo } = conf.messageFilter;
+    
+    // 检测消息类型
     const isImageMessage = 
       (msgInfo.from === 'wxQianxunPro' && msgInfo.msg.includes('[pic=')) ||
       (msgInfo.from === 'qq' && msgInfo.msg.includes('[CQ:image')) ||
       (msgInfo.from === 'wecomapp' && (!msgInfo.msg || msgInfo.msg === ''));
     
-    if (isImageMessage && !conf.messageFilter.enableImage) {
+    const isVoiceMessage = msgInfo._isVoice === true;
+    const isVideoMessage = msgInfo._isVideo === true;
+    
+    // 类型过滤检查
+    if (isImageMessage && !enableImage) {
       this.log('图片消息被过滤');
       return false;
     }
-    
-    if (!isImageMessage && !conf.messageFilter.enableText) {
+    if (isVoiceMessage && !enableVoice) {
+      this.log('语音消息被过滤');
+      return false;
+    }
+    if (isVideoMessage && !enableVideo) {
+      this.log('视频消息被过滤');
+      return false;
+    }
+    if (!isImageMessage && !isVoiceMessage && !isVideoMessage && !enableText) {
       this.log('文字消息被过滤');
       return false;
     }
     
     return true;
+  }
+
+  // 应用替换规则
+  applyReplaceRules(text, replaceRules) {
+    if (!text || !replaceRules?.length) return text;
+    
+    let result = text;
+    for (const rule of replaceRules) {
+      if (rule.old) {
+        const original = result;
+        result = result.replace(new RegExp(rule.old, 'g'), rule.new || '');
+        if (original !== result) {
+          this.log(`应用替换: "${rule.old}" -> "${rule.new}"`);
+        }
+      }
+    }
+    return result;
+  }
+
+  // 构建最终消息内容
+  buildFinalMessage(baseContent, extraInfo, addText) {
+    const parts = [baseContent];
+    
+    if (addText) {
+      parts.push(addText.replaceAll('\\n', '\n'));
+    }
+    
+    if (extraInfo) {
+      parts.push(extraInfo);
+    }
+    
+    return parts.filter(part => part && part.trim()).join('\n').trim();
   }
 
   // 处理相同平台消息转发
@@ -309,57 +369,38 @@ class MessageProcessor {
     let isImageMessage = false;
     let imagePath = '';
 
-    // 检查wxQianxunPro图片消息
+    // 处理wxQianxunPro图片消息
     if (msgInfo.from === 'wxQianxunPro' && msgInfo.msg.includes('[pic=')) {
       const parsed = this.parseWxQianxunProImage(msgInfo.msg);
-      
       if (parsed.hasImage) {
         isImageMessage = true;
         imagePath = parsed.localPath;
         finalMsg = parsed.textContent;
-        this.log(`📄 提取图片路径: ${imagePath}`);
+        this.log(`提取图片路径: ${imagePath}`);
       }
     }
 
     // 应用替换规则
-    conf.replace.forEach(r => {
-      if (r.old && finalMsg) {
-        const original = finalMsg;
-        finalMsg = finalMsg.replace(new RegExp(r.old, 'g'), r.new);
-        if (original !== finalMsg) {
-          this.log(`🔧 应用替换规则: "${r.old}" -> "${r.new}"`);
-        }
-      }
-    });
+    finalMsg = this.applyReplaceRules(finalMsg, conf.replace);
     
     const obj = { platform: dst.from };
     obj[dst.type] = dst.id;
     
     const extra = this.buildExtraInfo(msgInfo, conf);
-    
-    // 构建最终内容
-    let textContent = finalMsg;
-    if (textContent || extra || conf.addText) {
-      textContent = `${textContent}${conf.addText.replaceAll('\\n', '\n')}${extra ? '\n' + extra : ''}`.trim();
-    }
+    const textContent = this.buildFinalMessage(finalMsg, extra, conf.addText);
     
     // 处理消息发送
     if (isImageMessage && imagePath) {
-      this.log(`📤 发送图片文件到相同平台`);
-      
-      // 使用文件方式发送图片
+      this.log(`发送图片到相同平台`);
       obj.type = 'file';
       obj.path = imagePath;
       obj.msg = textContent || '[图片]';
-      
     } else {
-      // 纯文本消息
       obj.type = 'text';
       obj.msg = textContent;
     }
     
-    this.log(`🔧 发送对象: 类型=${obj.type}, 目标=${obj[dst.type]}`);
-    
+    this.log(`发送对象: 类型=${obj.type}, 目标=${obj[dst.type]}`);
     return obj;
   }
 
@@ -368,52 +409,46 @@ class MessageProcessor {
     this.log(`🌐 跨平台转发: ${msgInfo.from} -> ${dst.from}`);
     
     let finalMsg = msgInfo.msg;
-    let isImageMessage = false;
-    let imageSource = '';
+    let mediaType = '';
+    let mediaSource = '';
 
-    // 检查各种消息类型
+    // 检测消息类型
     if (msgInfo.from === 'wxQianxunPro' && msgInfo.msg.includes('[pic=')) {
       const parsed = this.parseWxQianxunProImage(msgInfo.msg);
       if (parsed.hasImage) {
-        isImageMessage = true;
+        mediaType = 'image';
         finalMsg = parsed.textContent;
-        imageSource = '微信';
-        this.log('🖼️ 检测到微信图片消息');
+        mediaSource = '微信';
       }
-    }
-    else if (msgInfo.from === 'qq' && msgInfo.msg.includes('[CQ:')) {
+    } else if (msgInfo.from === 'qq' && msgInfo.msg.includes('[CQ:')) {
       const parsed = this.parseCQ(msgInfo.msg);
       if (parsed.hasMedia) {
-        isImageMessage = true;
+        mediaType = 'image';
         finalMsg = parsed.text;
-        imageSource = 'QQ';
-        this.log('🖼️ 检测到QQ图片消息');
+        mediaSource = 'QQ';
       }
-    }
-    else if (msgInfo.from === 'wecomapp' && (!msgInfo.msg || msgInfo.msg === '')) {
-      // 企业微信空消息处理
-      isImageMessage = true;
-      finalMsg = '';
-      imageSource = '企业微信';
-      this.log('🖼️ 检测到企业微信图片消息');
-    }
-    else if ((msgInfo.from.includes('wx') || msgInfo.from === 'wxQianxunPro') && 
+    } else if (msgInfo.from === 'wecomapp') {
+      if (!msgInfo.msg || msgInfo.msg === '') {
+        if (msgInfo._isImage) {
+          mediaType = 'image';
+          mediaSource = '企业微信';
+        } else if (msgInfo._isVoice) {
+          mediaType = 'voice';
+          mediaSource = '企业微信';
+        } else if (msgInfo._isVideo) {
+          mediaType = 'video';
+          mediaSource = '企业微信';
+        }
+      }
+    } else if ((msgInfo.from.includes('wx') || msgInfo.from === 'wxQianxunPro') && 
         msgInfo.msg.includes('<msg>')) {
       const parsedXML = this.parseWechatXML(msgInfo.msg);
       finalMsg = parsedXML.content;
-      this.log('📱 检测到微信XML消息');
+      this.log('检测到微信XML消息');
     }
 
     // 应用替换规则
-    conf.replace.forEach(r => {
-      if (r.old && finalMsg) {
-        const original = finalMsg;
-        finalMsg = finalMsg.replace(new RegExp(r.old, 'g'), r.new);
-        if (original !== finalMsg) {
-          this.log(`🔧 应用替换规则: "${r.old}" -> "${r.new}"`);
-        }
-      }
-    });
+    finalMsg = this.applyReplaceRules(finalMsg, conf.replace);
     
     const obj = { platform: dst.from };
     obj[dst.type] = dst.id;
@@ -423,43 +458,33 @@ class MessageProcessor {
     // 构建最终消息
     let textContent = finalMsg || '';
     
-    // 添加图片提示
-    if (isImageMessage) {
-      if (textContent) {
-        textContent = `🖼️ [${imageSource}图片]\n${textContent}`;
-      } else {
-        textContent = `🖼️ [${imageSource}图片]`;
-      }
-      this.log(`📤 生成图片提示消息`);
+    // 添加媒体提示
+    const mediaIcons = { image: '🖼️', voice: '🎤', video: '📹' };
+    if (mediaType && mediaIcons[mediaType]) {
+      const mediaLabel = `${mediaIcons[mediaType]} [${mediaSource}${mediaType === 'image' ? '图片' : mediaType === 'voice' ? '语音' : '视频'}消息]`;
+      textContent = textContent ? `${mediaLabel}\n${textContent}` : mediaLabel;
+      this.log(`生成${mediaType}提示消息`);
     }
     
-    // 添加自定义文本和额外信息
-    if (conf.addText) {
-      textContent += conf.addText.replaceAll('\\n', '\n');
-    }
-    if (extra) {
-      textContent += `\n${extra}`;
-    }
+    textContent = this.buildFinalMessage(textContent, extra, conf.addText);
     
     obj.type = 'text';
-    obj.msg = textContent.trim();
+    obj.msg = textContent;
     
-    this.log(`📤 跨平台转发到 ${dst.from}: ${textContent.substring(0, 100)}`);
-    
+    this.log(`跨平台转发到 ${dst.from}: ${textContent.substring(0, 100)}`);
     return obj;
   }
 
   // 验证目标配置
   validateTargetConfig(dst, msgInfo) {
     if (!dst.from || !dst.id) {
-      this.log(`⚠️ 跳过无效目标: 平台=${dst.from}, ID=${dst.id}`);
+      this.log(`跳过无效目标: 平台=${dst.from}, ID=${dst.id}`);
       return false;
     }
     
-    // 检查平台标识是否正确
     const validPlatforms = ['qq', 'wxQianxunPro', 'wxQianxun', 'wechaty', 'tgBot', 'HumanTG', 'wecomapp', 'ssh', 'wxXyo'];
     if (!validPlatforms.includes(dst.from)) {
-      this.log(`⚠️ 目标平台可能配置错误: ${dst.from}`);
+      this.log(`目标平台可能配置错误: ${dst.from}`);
     }
     
     return true;
@@ -468,21 +493,22 @@ class MessageProcessor {
   // 发送消息（带重试机制）
   async sendMessage(sendObj, conf, retryCount = 0) {
     try {
-      if (!sendObj || !sendObj.msg) {
-        this.log('⚠️ 跳过发送: 消息内容为空');
+      if (!sendObj?.msg) {
+        this.log('跳过发送: 消息内容为空');
         return false;
       }
       
       sysMethod.push(sendObj);
-      this.log(`🚀 消息已推送到发送队列: ${sendObj.platform} -> ${sendObj[sendObj.groupId ? 'groupId' : 'userId']}`);
+      this.log(`消息已推送到发送队列: ${sendObj.platform} -> ${sendObj[sendObj.groupId ? 'groupId' : 'userId']}`);
       return true;
       
     } catch (error) {
-      this.log(`❌ 发送失败: ${error.message}`);
+      this.log(`发送失败: ${error.message}`);
       
       // 重试逻辑
-      if (conf.advanced && conf.advanced.retryOnFail && retryCount < (conf.advanced.maxRetries || 3)) {
-        this.log(`🔄 第${retryCount + 1}次重试...`);
+      const maxRetries = conf.advanced?.maxRetries || 3;
+      if (conf.advanced?.retryOnFail && retryCount < maxRetries) {
+        this.log(`第${retryCount + 1}次重试...`);
         await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1)));
         return await this.sendMessage(sendObj, conf, retryCount + 1);
       }
@@ -497,27 +523,31 @@ const messageProcessor = new MessageProcessor();
 
 module.exports = async s => {
   try {
-    // 获取配置
     await ConfigDB.get();
-    if (!Object.keys(ConfigDB.userConfig).length) {
-      return 'next';
-    }
-
     const configs = (ConfigDB.userConfig.configs || []).filter(o => o.enable);
     const msgInfo = s.msgInfo;
 
+    if (!configs.length) return 'next';
+
     // 设置调试模式
-    const debugMode = configs.some(conf => conf.advanced && conf.advanced.enableDebug);
+    const debugMode = configs.some(conf => conf.advanced?.enableDebug);
     messageProcessor.setDebug(debugMode);
 
-    // 清理临时图片
-    messageProcessor.cleanupTempImages();
+    // 清理资源
+    messageProcessor.cleanup();
 
     // 记录接收到的消息
-    messageProcessor.log(`📨 收到消息: 平台=${msgInfo.from}, 用户=${msgInfo.userId}, 群组=${msgInfo.groupId}, 长度=${msgInfo.msg ? msgInfo.msg.length : 0}`);
+    messageProcessor.log(`📨 收到消息: 平台=${msgInfo.from}, 用户=${msgInfo.userId}, 群组=${msgInfo.groupId}`);
     
     if (debugMode) {
-      messageProcessor.log(`📝 消息内容: ${msgInfo.msg ? msgInfo.msg.substring(0, 200) : '[空消息]'}`);
+      messageProcessor.log(`消息内容: ${msgInfo.msg ? msgInfo.msg.substring(0, 200) : '[空消息]'}`);
+    }
+
+    // 消息去重检查
+    const cacheEnabled = configs.some(conf => conf.advanced?.cacheEnabled !== false);
+    if (cacheEnabled && messageProcessor.isDuplicateMessage(msgInfo)) {
+      messageProcessor.log('跳过重复消息');
+      return 'next';
     }
 
     let processedCount = 0;
@@ -528,18 +558,17 @@ module.exports = async s => {
         msgInfo.from === src.from && src.id.includes(String(msgInfo[src.type]))
       );
       if (!hitSource) {
-        messageProcessor.log(`❌ 来源不匹配: ${msgInfo.from} ${msgInfo[msgInfo.groupId ? 'groupId' : 'userId']}`);
+        messageProcessor.log(`来源不匹配: ${msgInfo.from} ${msgInfo[msgInfo.groupId ? 'groupId' : 'userId']}`);
         continue;
       }
 
       // 检查关键词匹配
       const hitKeyword = conf.rule.some(k =>
-        k === '任意' || (k && msgInfo.msg && msgInfo.msg.includes(k)) ||
-        // 企业微信空消息（图片）也视为匹配
+        k === '任意' || (k && msgInfo.msg?.includes(k)) ||
         (msgInfo.from === 'wecomapp' && (!msgInfo.msg || msgInfo.msg === '') && k === '任意')
       );
       if (!hitKeyword) {
-        messageProcessor.log(`❌ 关键词不匹配: ${msgInfo.msg ? msgInfo.msg.substring(0, 50) : '[空消息]'}`);
+        messageProcessor.log(`关键词不匹配: ${msgInfo.msg ? msgInfo.msg.substring(0, 50) : '[空消息]'}`);
         continue;
       }
 
@@ -559,24 +588,16 @@ module.exports = async s => {
 
           messageProcessor.log(`🎯 准备转发到: 平台=${dst.from}, 类型=${dst.type}, ID=${dst.id}`);
 
-          let sendObj;
+          const sendObj = msgInfo.from === dst.from ? 
+            messageProcessor.handleSamePlatformForward(msgInfo, dst, conf) :
+            messageProcessor.handleCrossPlatformForward(msgInfo, dst, conf);
           
-          if (msgInfo.from === dst.from) {
-            // 相同平台转发
-            sendObj = messageProcessor.handleSamePlatformForward(msgInfo, dst, conf);
-          } else {
-            // 跨平台转发
-            sendObj = messageProcessor.handleCrossPlatformForward(msgInfo, dst, conf);
-          }
-          
-          // 发送消息
-          const success = await messageProcessor.sendMessage(sendObj, conf);
-          if (success) {
+          if (await messageProcessor.sendMessage(sendObj, conf)) {
             processedCount++;
           }
           
         } catch (sendError) {
-          messageProcessor.log(`❌ 发送到 ${dst.from} 失败: ${sendError.message}`);
+          messageProcessor.log(`发送到 ${dst.from} 失败: ${sendError.message}`);
         }
       }
     }
