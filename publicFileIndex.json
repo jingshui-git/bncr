@@ -5,8 +5,8 @@
     "name": "HumanTG",
     "author": "Aming",
     "team": "Bncr团队",
-    "version": "1.0.7",
-    "description": "Telegram 人行适配器（优化 message_id_invalid 处理）",
+    "version": "1.0.8",
+    "description": "Telegram 人行适配器（彻底修复 MESSAGE_ID_INVALID 问题）",
     "classification": [
       "官方适配器"
     ],
@@ -350,28 +350,6 @@
     "isAuthentication": false,
     "isEncPlugin": false,
     "id": "WDWf+EZYhodsQyEkP5sISTQvMEA=",
-    "isChatPlugin": true
-  },
-  "9jeAI+njPbk8assc0j6NMIFpBic=": {
-    "type": "github",
-    "name": "消息转发",
-    "author": "seven",
-    "team": "jingshui",
-    "version": "5.3.0",
-    "description": "多规则独立配置的多平台消息转发：自动识别并转发图片、视频、语音、文件消息",
-    "classification": [
-      "功能插件"
-    ],
-    "filename": "消息转发.js",
-    "fileDir": "/plugins/jingshui/消息转发.js",
-    "systemVersionRange": "",
-    "isCron": false,
-    "isAdapter": false,
-    "isMod": false,
-    "isService": false,
-    "isAuthentication": false,
-    "isEncPlugin": false,
-    "id": "9jeAI+njPbk8assc0j6NMIFpBic=",
     "isChatPlugin": true
   },
   "ih+60fdomvT/AVSrG36DgBMRph0=": {
