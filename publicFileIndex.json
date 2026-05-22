@@ -60,7 +60,7 @@
     "isCron": false,
     "isAdapter": true,
     "isMod": false,
-    "isService": false，
+    "isService": false,
     "isAuthentication": false,
     "isEncPlugin": true,
     "id": "IxmdixsmKwTuMOl9hQjyBBk6Oqc=",
@@ -417,9 +417,7 @@
     "isEncPlugin": false,
     "id": "LQO2ljqsrdj+H8N6/jrKJX7XkAc=",
     "isChatPlugin": true
-  }
-}
-{
+  },
   "wxWorkApp-adapter": {
     "type": "github",
     "name": "wxWorkApp",
