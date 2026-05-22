@@ -60,7 +60,7 @@
     "isCron": false,
     "isAdapter": true,
     "isMod": false,
-    "isService": false,
+    "isService": false，
     "isAuthentication": false,
     "isEncPlugin": true,
     "id": "IxmdixsmKwTuMOl9hQjyBBk6Oqc=",
@@ -180,7 +180,7 @@
     "type": "github",
     "name": "IKUN",
     "author": "seven",
-    "team": "jingshui"，
+    "team": "jingshui",
     "version": "1.0.2",
     "description": "发送IKUN语录和表情包支持所有平台",
     "classification": [
@@ -188,7 +188,7 @@
     ],
     "filename": "IKUN.js",
     "fileDir": "/plugins/jingshui/IKUN.js",
-    "systemVersionRange": ""，
+    "systemVersionRange": "",
     "isCron": false,
     "isAdapter": false,
     "isMod": false,
