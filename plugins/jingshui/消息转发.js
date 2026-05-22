@@ -2,8 +2,8 @@
 * @description 多规则独立配置的多平台消息转发：自动识别并转发图片、视频、语音、文件消息
 * @team jingshui
 * @author seven（优化图片消息处理和格式）
-* @platform tgBot qq ssh HumanTG wxQianxun wxXyo wechaty wxQianxunPro wecomapp
-* @version 5.3.0
+* @platform tgBot qq ssh HumanTG wxQianxun wxXyo wechaty wxQianxunPro wecomapp wxWorkApp
+* @version 5.3.2-stable
 * @name 消息转发
 * @rule [\s\S]+
 * @priority 100000
@@ -98,6 +98,7 @@ class MessageProcessor {
       'tgBot': 'Telegram',
       'HumanTG': 'Telegram',
       'wecomapp': '企业微信',
+      'wxWorkApp': '企业微信应用',
       'ssh': 'SSH',
       'wxXyo': '微信'
     };
@@ -315,15 +316,19 @@ class MessageProcessor {
   isMessageTypeAllowed(msgInfo, conf) {
     if (!conf.messageFilter) return true;
     
-    const { enableText, enableImage, enableVoice, enableVideo } = conf.messageFilter;
+    const { enableText, enableImage, enableFile, enableVoice, enableVideo } = conf.messageFilter;
     
     const isImageMessage = 
-      (msgInfo.from === 'wxQianxunPro' && msgInfo.msg.includes('[pic=')) ||
-      (msgInfo.from === 'qq' && msgInfo.msg.includes('[CQ:image')) ||
-      (msgInfo.from === 'wecomapp' && (!msgInfo.msg || msgInfo.msg === ''));
+      (msgInfo.from === 'wxQianxunPro' && String(msgInfo.msg || '').includes('[pic=')) ||
+      (msgInfo.from === 'qq' && String(msgInfo.msg || '').includes('[CQ:image')) ||
+      (['wecomapp', 'wxWorkApp'].includes(msgInfo.from) && (
+        (!msgInfo.msg || msgInfo.msg === '') ||
+        /^\[图片\]/.test(String(msgInfo.msg || ''))
+      ));
     
-    const isVoiceMessage = msgInfo._isVoice === true;
-    const isVideoMessage = msgInfo._isVideo === true;
+    const isVoiceMessage = msgInfo._isVoice === true || /^\[语音\]/.test(String(msgInfo.msg || ''));
+    const isVideoMessage = msgInfo._isVideo === true || /^\[视频\]/.test(String(msgInfo.msg || ''));
+    const isFileMessage = msgInfo._isFile === true || /^\[文件\]/.test(String(msgInfo.msg || ''));
     
     if (isImageMessage && !enableImage) {
       this.log('图片消息被过滤');
@@ -337,7 +342,11 @@ class MessageProcessor {
       this.log('视频消息被过滤');
       return false;
     }
-    if (!isImageMessage && !isVoiceMessage && !isVideoMessage && !enableText) {
+    if (isFileMessage && !enableFile) {
+      this.log('文件消息被过滤');
+      return false;
+    }
+    if (!isImageMessage && !isVoiceMessage && !isVideoMessage && !isFileMessage && !enableText) {
       this.log('文字消息被过滤');
       return false;
     }
@@ -348,15 +357,20 @@ class MessageProcessor {
   // 应用替换规则
   applyReplaceRules(text, replaceRules) {
     if (!text || !replaceRules?.length) return text;
-    
-    let result = text;
+
+    let result = String(text);
     for (const rule of replaceRules) {
-      if (rule.old) {
+      if (!rule || !rule.old) continue;
+
+      try {
         const original = result;
-        result = result.replace(new RegExp(rule.old, 'g'), rule.new || '');
+        const reg = new RegExp(rule.old, 'g');
+        result = result.replace(reg, rule.new || '');
         if (original !== result) {
-          this.log(`应用替换: "${rule.old}" -> "${rule.new}"`);
+          this.log(`应用替换: "${rule.old}" -> "${rule.new || ''}"`);
         }
+      } catch (err) {
+        this.log(`替换规则无效，已跳过: "${rule.old}"，原因: ${err.message}`);
       }
     }
     return result;
@@ -381,11 +395,11 @@ class MessageProcessor {
   handleSamePlatformForward(msgInfo, dst, conf) {
     this.log(`🔄 相同平台转发: ${msgInfo.from} -> ${dst.from}`);
     
-    let finalMsg = msgInfo.msg;
+    let finalMsg = String(msgInfo.msg || '');
     let isImageMessage = false;
     let imagePath = '';
 
-    if (msgInfo.from === 'wxQianxunPro' && msgInfo.msg.includes('[pic=')) {
+    if (msgInfo.from === 'wxQianxunPro' && String(msgInfo.msg || '').includes('[pic=')) {
       const parsed = this.parseWxQianxunProImage(msgInfo.msg);
       if (parsed.hasImage) {
         isImageMessage = true;
@@ -397,8 +411,7 @@ class MessageProcessor {
 
     finalMsg = this.applyReplaceRules(finalMsg, conf.replace);
     
-    const obj = { platform: dst.from };
-    obj[dst.type] = dst.id;
+    const obj = this.buildTargetObject(dst);
     
     const extra = this.buildExtraInfo(msgInfo, conf);
     const textContent = this.buildFinalMessage(finalMsg, extra, conf.addText);
@@ -421,26 +434,42 @@ class MessageProcessor {
   handleCrossPlatformForward(msgInfo, dst, conf) {
     this.log(`🌐 跨平台转发: ${msgInfo.from} -> ${dst.from}`);
     
-    let finalMsg = msgInfo.msg;
+    let finalMsg = String(msgInfo.msg || '');
     let mediaType = '';
     let mediaSource = '';
 
-    if (msgInfo.from === 'wxQianxunPro' && msgInfo.msg.includes('[pic=')) {
+    if (msgInfo.from === 'wxQianxunPro' && String(msgInfo.msg || '').includes('[pic=')) {
       const parsed = this.parseWxQianxunProImage(msgInfo.msg);
       if (parsed.hasImage) {
         mediaType = 'image';
         finalMsg = parsed.textContent;
         mediaSource = '微信';
       }
-    } else if (msgInfo.from === 'qq' && msgInfo.msg.includes('[CQ:')) {
+    } else if (msgInfo.from === 'qq' && String(msgInfo.msg || '').includes('[CQ:')) {
       const parsed = this.parseCQ(msgInfo.msg);
       if (parsed.hasMedia) {
         mediaType = 'image';
         finalMsg = parsed.text;
         mediaSource = 'QQ';
       }
-    } else if (msgInfo.from === 'wecomapp') {
-      if (!msgInfo.msg || msgInfo.msg === '') {
+    } else if (['wecomapp', 'wxWorkApp'].includes(msgInfo.from)) {
+      if (/^\[图片\]/.test(String(msgInfo.msg || ''))) {
+        mediaType = 'image';
+        mediaSource = '企业微信应用';
+        finalMsg = msgInfo.msg;
+      } else if (/^\[语音\]/.test(String(msgInfo.msg || ''))) {
+        mediaType = 'voice';
+        mediaSource = '企业微信应用';
+        finalMsg = msgInfo.msg;
+      } else if (/^\[视频\]/.test(String(msgInfo.msg || ''))) {
+        mediaType = 'video';
+        mediaSource = '企业微信应用';
+        finalMsg = msgInfo.msg;
+      } else if (/^\[文件\]/.test(String(msgInfo.msg || ''))) {
+        mediaType = 'file';
+        mediaSource = '企业微信应用';
+        finalMsg = msgInfo.msg;
+      } else if (!msgInfo.msg || msgInfo.msg === '') {
         if (msgInfo._isImage) {
           mediaType = 'image';
           mediaSource = '企业微信';
@@ -453,7 +482,7 @@ class MessageProcessor {
         }
       }
     } else if ((msgInfo.from.includes('wx') || msgInfo.from === 'wxQianxunPro') && 
-        msgInfo.msg.includes('<msg>')) {
+        String(msgInfo.msg || '').includes('<msg>')) {
       const parsedXML = this.parseWechatXML(msgInfo.msg);
       finalMsg = parsedXML.content;
       this.log('检测到微信XML消息');
@@ -461,16 +490,15 @@ class MessageProcessor {
 
     finalMsg = this.applyReplaceRules(finalMsg, conf.replace);
     
-    const obj = { platform: dst.from };
-    obj[dst.type] = dst.id;
+    const obj = this.buildTargetObject(dst);
     
     const extra = this.buildExtraInfo(msgInfo, conf);
     
     let textContent = finalMsg || '';
     
-    const mediaIcons = { image: '🖼️', voice: '🎤', video: '📹' };
+    const mediaIcons = { image: '🖼️', voice: '🎤', video: '📹', file: '📎' };
     if (mediaType && mediaIcons[mediaType]) {
-      const mediaLabel = `${mediaIcons[mediaType]} [${mediaSource}${mediaType === 'image' ? '图片' : mediaType === 'voice' ? '语音' : '视频'}消息]`;
+      const mediaLabel = `${mediaIcons[mediaType]} [${mediaSource}${mediaType === 'image' ? '图片' : mediaType === 'voice' ? '语音' : mediaType === 'video' ? '视频' : '文件'}消息]`;
       textContent = textContent ? `${mediaLabel}\n${textContent}` : mediaLabel;
       this.log(`生成${mediaType}提示消息`);
     }
@@ -488,6 +516,23 @@ class MessageProcessor {
     return obj;
   }
 
+
+
+  // 构建目标对象：兼容企业微信应用的部门/标签目标
+  buildTargetObject(dst) {
+    const obj = { platform: dst.from };
+
+    if (dst.from === 'wxWorkApp' && dst.type === 'groupId') {
+      obj.partyId = dst.id; // 企业微信部门 ID
+    } else if (dst.from === 'wxWorkApp' && dst.type === 'tagId') {
+      obj.tagId = dst.id; // 企业微信标签 ID，预留
+    } else {
+      obj[dst.type] = dst.id;
+    }
+
+    return obj;
+  }
+
   // 验证目标配置
   validateTargetConfig(dst, msgInfo) {
     if (!dst.from || !dst.id) {
@@ -495,7 +540,7 @@ class MessageProcessor {
       return false;
     }
     
-    const validPlatforms = ['qq', 'wxQianxunPro', 'wxQianxun', 'wechaty', 'tgBot', 'HumanTG', 'wecomapp', 'ssh', 'wxXyo'];
+    const validPlatforms = ['qq', 'wxQianxunPro', 'wxQianxun', 'wechaty', 'tgBot', 'HumanTG', 'wecomapp', 'wxWorkApp', 'ssh', 'wxXyo'];
     if (!validPlatforms.includes(dst.from)) {
       this.log(`目标平台可能配置错误: ${dst.from}`);
     }
@@ -511,9 +556,16 @@ class MessageProcessor {
         return false;
       }
       
-      sysMethod.push(sendObj);
-      this.log(`消息已推送到发送队列: ${sendObj.platform} -> ${sendObj[sendObj.groupId ? 'groupId' : 'userId']}`);
-      return true;
+      const result = await sysMethod.push(sendObj);
+      this.log(`消息推送结果: ${JSON.stringify(result)}`);
+      this.log(`消息已推送: ${sendObj.platform} -> ${JSON.stringify({
+        userId: sendObj.userId,
+        groupId: sendObj.groupId,
+        partyId: sendObj.partyId,
+        tagId: sendObj.tagId,
+        type: sendObj.type
+      })}`);
+      return result !== false;
       
     } catch (error) {
       this.log(`发送失败: ${error.message}`);
@@ -551,7 +603,7 @@ module.exports = async s => {
     messageProcessor.cleanup();
 
     // 关键日志 - 无论如何都会显示
-    messageProcessor.keyLog(`收到 ${msgInfo.from} 消息: ${msgInfo.msg ? msgInfo.msg.substring(0, 50) : '[空消息]'}`);
+    messageProcessor.keyLog(`收到 ${msgInfo.from} 消息: ${String(msgInfo.msg || '').substring(0, 50) || '[空消息]'}`);
     
     // 详细日志
     messageProcessor.log(`📨 收到消息: 平台=${msgInfo.from}, 用户=${msgInfo.userId}, 群组=${msgInfo.groupId}`);
@@ -573,20 +625,23 @@ module.exports = async s => {
     let processedCount = 0;
 
     for (const conf of configs) {
-      const hitSource = conf.listen.some(src =>
-        msgInfo.from === src.from && src.id.includes(String(msgInfo[src.type]))
-      );
+      const hitSource = conf.listen.some(src => {
+        if (msgInfo.from !== src.from) return false;
+        const currentId = String(msgInfo[src.type] ?? '');
+        const ids = (src.id || []).map(String);
+        return ids.includes(currentId) || ids.includes('*') || ids.includes('全部');
+      });
       if (!hitSource) {
-        messageProcessor.log(`来源不匹配: ${msgInfo.from} ${msgInfo[msgInfo.groupId ? 'groupId' : 'userId']}`);
+        messageProcessor.log(`来源不匹配: ${msgInfo.from} userId=${msgInfo.userId} groupId=${msgInfo.groupId}`);
         continue;
       }
 
       const hitKeyword = conf.rule.some(k =>
-        k === '任意' || (k && msgInfo.msg?.includes(k)) ||
-        (msgInfo.from === 'wecomapp' && (!msgInfo.msg || msgInfo.msg === '') && k === '任意')
+        k === '任意' || (k && String(msgInfo.msg || '').includes(k)) ||
+        (['wecomapp', 'wxWorkApp'].includes(msgInfo.from) && (!msgInfo.msg || msgInfo.msg === '') && k === '任意')
       );
       if (!hitKeyword) {
-        messageProcessor.log(`关键词不匹配: ${msgInfo.msg ? msgInfo.msg.substring(0, 50) : '[空消息]'}`);
+        messageProcessor.log(`关键词不匹配: ${String(msgInfo.msg || '').substring(0, 50) || '[空消息]'}`);
         continue;
       }
 
