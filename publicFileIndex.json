@@ -119,7 +119,7 @@
     "description": "wxQianxun适配器",
     "classification": [
       "官方适配器"
-    ]，
+    ],
     "filename": "wxQianxun.js",
     "fileDir": "/Adapter/wxQianxun.js",
     "systemVersionRange": "",
@@ -180,7 +180,7 @@
     "type": "github",
     "name": "IKUN",
     "author": "seven",
-    "team": "jingshui",
+    "team": "jingshui"，
     "version": "1.0.2",
     "description": "发送IKUN语录和表情包支持所有平台",
     "classification": [
@@ -188,7 +188,7 @@
     ],
     "filename": "IKUN.js",
     "fileDir": "/plugins/jingshui/IKUN.js",
-    "systemVersionRange": "",
+    "systemVersionRange": ""，
     "isCron": false,
     "isAdapter": false,
     "isMod": false,
@@ -351,7 +351,7 @@
     "isEncPlugin": false,
     "id": "WDWf+EZYhodsQyEkP5sISTQvMEA=",
     "isChatPlugin": true
-  }，
+  },
   "9jeAI+njPbk8assc0j6NMIFpBic=": {
     "type": "github",
     "name": "消息转发",
@@ -411,7 +411,7 @@
     "systemVersionRange": "",
     "isCron": false,
     "isAdapter": false,
-    "isMod": false,
+    "isMod": false，
     "isService": false,
     "isAuthentication": false,
     "isEncPlugin": false,
