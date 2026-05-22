@@ -411,7 +411,7 @@
     "systemVersionRange": "",
     "isCron": false,
     "isAdapter": false,
-    "isMod": false，
+    "isMod": false,
     "isService": false,
     "isAuthentication": false,
     "isEncPlugin": false,
